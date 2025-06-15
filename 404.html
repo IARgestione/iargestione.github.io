@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redireccionando...</title>
+  <script type="text/javascript">
+    // --- CONFIGURACIÓN CRÍTICA ---
+    // Pega aquí la URL de tu aplicación web de Google Apps Script que acabas de obtener.
+    // ¡DEBE TERMINAR EN /exec!
+    const URL_BASE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwvenwS9bqFMpPgPIm1H9q8z1GM56StZ4BeDRBN4yytDrFQQRpcbHhNhuY2OJyB9X3WYg/exec";
+    // -----------------------------
+
+    /**
+     * Muestra un mensaje de error en la página.
+     * @param {string} message - El mensaje de error a mostrar.
+     */
+    function displayError(message) {
+        // Reemplaza el contenido del body para mostrar el error de forma clara.
+        document.body.innerHTML = `<div style="font-family: sans-serif; text-align: center; padding: 40px; border: 2px solid red; margin: 20px; border-radius: 8px; background-color: #fff5f5;">
+            <h2 style="color: #c53030; margin-bottom: 10px;">Error de Configuración</h2>
+            <p style="color: #333;">${message}</p>
+        </div>`;
+    }
+
+    // Se asegura de que el código se ejecute después de que el DOM esté completamente cargado.
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Validar que la URL del script ha sido configurada.
+        if (URL_BASE_APPS_SCRIPT === "AQUÍ_PEGA_LA_URL_DE_TU_APPS_SCRIPT" || !URL_BASE_APPS_SCRIPT.startsWith("https://script.google.com/")) {
+            displayError("Por favor, edita este archivo (404.html) y reemplaza 'AQUÍ_PEGA_LA_URL_DE_TU_APPS_SCRIPT' con la URL correcta de tu Google Apps Script.");
+            return; // Detiene la ejecución si no está configurado.
+        }
+
+        // 2. Obtiene la parte de la ruta del enlace de GitHub (ej: "/DFEEEB09")
+        const path = window.location.pathname;
+
+        // 3. Extrae solo el ID, quitando la primera barra "/" y cualquier posible parámetro.
+        const idRecurso = path.substring(1).split('?')[0];
+
+        // 4. Si la URL tiene un ID de recurso (evita redirigir la página principal),
+        // construye la URL final del Apps Script y redirige al usuario.
+        if (idRecurso) {
+          const urlFinal = `${URL_BASE_APPS_SCRIPT}?id=${idRecurso}`;
+          
+          // Redirige inmediatamente al usuario. Es el método más rápido.
+          window.location.replace(urlFinal);
+        } else {
+            // Opcional: Si alguien visita la página raíz (como iargestione.github.io), muestra un mensaje.
+            document.body.innerHTML = '<p style="font-family: sans-serif; text-align: center; padding-top: 50px; color: #555;">Sistema de redirección de QR activo.</p>';
+        }
+    });
+  </script>
+</head>
+<body>
+  <!-- Este mensaje solo se ve por una fracción de segundo o si JavaScript está desactivado -->
+  <p>Un momento, estamos buscando tu recurso...</p>
+</body>
+</html>
