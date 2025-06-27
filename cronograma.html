@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma Interactivo del Curso de Julio - IARGestione</title>
+
+    <!-- Placeholder Comments -->
+    <!-- Chosen Palette: Joyful Academic (Vibrant Blues, Emerald, Teal, Indigo accents on light neutrals) -->
+    <!-- Application Structure Plan: A single-page application with a hierarchical, responsive sidebar navigation. Week items toggle visibility of nested class and evaluation links. This improves clarity and organization for the user. Each class features side-by-side (desktop) or stacked (mobile) synchronous and asynchronous content cards for ease of consumption. -->
+    <!-- Visualization & Content Choices: Goal: Organize and present a course schedule. Method: Structured HTML cards with Tailwind CSS, using distinct card formats for individual content items within classes. Interaction: Sidebar items now have a toggling mechanism for nested class lists. Scroll spy highlights active section. Justification: Hierarchical navigation provides better information architecture for long schedules, reducing clutter. Card-based layout with clear iconography (PDF, video, evaluation) remains intuitive. Enhanced aesthetics with subtle gradients and refined typography improve user engagement. Synchronous and asynchronous content are now presented side-by-side on larger screens for better horizontal utilization. Floating action button with modal forms for user interaction. CONFIRMATION: NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #f4f8f9, #eef2ff);
+            background-attachment: fixed;
+            color: #1e293b;
+        }
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: auto;
+            min-height: 100vh;
+        }
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Mobile specific styles for sidebar overlay */
+        @media (max-width: 1023px) {
+            #sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                z-index: 1000;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            }
+            #sidebar.translate-x-0 {
+                transform: translateX(0);
+            }
+        }
+        @media (min-width: 1024px) {
+             #sidebar {
+                height: 100vh;
+             }
+        }
+
+        .sidebar-item.active {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            border-right: 4px solid #3b82f6;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            background-image: linear-gradient(to bottom right, #ffffff, #f9fafb);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+        }
+        section {
+            padding-top: 6rem;
+            margin-top: -6rem;
+        }
+        .sync-topic-card, .async-item-card {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.03);
+            border: 1px solid #eef3f8;
+            transition: all 0.2s ease-in-out;
+        }
+        .async-item-card:hover, .sync-topic-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border-color: #dbeafe;
+        }
+        .sync-topic-card h5 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .sync-topic-card p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #4a5568;
+            text-align: justify;
+        }
+        .icon-small {
+            font-size: 1rem;
+        }
+        .content-type-icon {
+            font-size: 1.1rem;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+        
+        /* Floating Action Button (FAB) */
+        .fab-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+        }
+        .fab-button {
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 9999px;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .fab-button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+        .fab-menu {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        .fab-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .fab-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: #334155;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .fab-menu-item:hover {
+            background-color: #f0f4f8;
+        }
+        .fab-menu-item i {
+            margin-right: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .modal-close-button {
+            background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;
+        }
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .modal-body label {
+            display: block; font-weight: 500; color: #334155; margin-bottom: 0.5rem; margin-top: 1rem;
+        }
+        .modal-body input, .modal-body textarea, .modal-body select {
+            width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 1rem; color: #475569; background-color: #f8fafc;
+        }
+        .modal-body textarea {
+            min-height: 100px; resize: vertical;
+        }
+        .modal-body button {
+            background-color: #22c55e; color: white; padding: 0.8rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; margin-top: 1.5rem; width: 100%;
+        }
+        .modal-body button:hover {
+            background-color: #16a34a;
+        }
+        
+        /* Icon Colors */
+        .icon-blue-700 { color: #1d4ed8; }
+        .icon-purple-600 { color: #9333ea; }
+        .icon-teal-600 { color: #0d9488; }
+        .icon-red-600 { color: #dc2626; }
+        .icon-emerald-600 { color: #059669; }
+        .icon-indigo-600 { color: #4f46e5; }
+        
+        /* Standard content icons */
+        .text-red-500 { color: #ef4444; }
+        .text-orange-500 { color: #f97316; }
+        .text-blue-500 { color: #3b82f6; }
+        .text-green-500 { color: #22c55e; }
+        .text-purple-600 { color: #9333ea; }
+        .text-sky-700 { color: #0369a1; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-emerald-700 { color: #047857; }
+        .text-blue-600 { color: #2563eb; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Mobile Header & Toggle Button -->
+    <header class="sticky top-0 bg-slate-800/80 backdrop-blur-md p-4 flex items-center justify-between z-40 lg:hidden">
+        <h2 class="text-xl font-bold text-white">IARGestione</h2>
+        <button id="menu-toggle" class="text-white text-2xl">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="w-72 bg-white h-full lg:sticky top-0 left-0 transform -translate-x-full lg:transform-none z-50 overflow-y-auto border-r border-slate-200 flex-shrink-0">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-slate-800">IARGestione</h1>
+                <p class="text-sm text-slate-500">Curso Intensivo - Julio 2025</p>
+            </div>
+            <div class="px-3 flex gap-2">
+                <button id="expand-all" class="flex-1 text-xs justify-center flex items-center px-3 py-2 font-medium rounded-md hover:bg-slate-100 text-slate-700">
+                    <i class="fas fa-expand-arrows-alt mr-2"></i>Expandir
+                </button>
+                <button id="collapse-all" class="flex-1 text-xs justify-center flex items-center px-3 py-2 font-medium rounded-md hover:bg-slate-100 text-slate-700">
+                    <i class="fas fa-compress-arrows-alt mr-2"></i>Contraer
+                </button>
+            </div>
+            <nav id="nav-menu" class="px-3 pb-6">
+                <h3 class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-4">Semanas</h3>
+                <a href="#intro" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                    <i class="fas fa-home mr-3 text-blue-500"></i>Inicio
+                </a>
+                <div class="space-y-1">
+                    <button class="sidebar-item sidebar-week-toggle group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100" data-target="week1-classes">
+                        <i class="fas fa-calendar-week mr-3 text-slate-400 group-hover:text-slate-600"></i>Semana 1 <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                    </button>
+                    <div id="week1-classes" class="hidden pl-6 space-y-1">
+                        <a href="#clase1" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 1 <span class="ml-auto text-xs text-slate-500">Lun, 30 Jun</span>
+                        </a>
+                        <a href="#clase2" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 2 <span class="ml-auto text-xs text-slate-500">Mar, 1 Jul</span>
+                        </a>
+                        <a href="#clase3" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 3 <span class="ml-auto text-xs text-slate-500">Mié, 2 Jul</span>
+                        </a>
+                        <a href="#clase4" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 4 <span class="ml-auto text-xs text-slate-500">Jue, 3 Jul</span>
+                        </a>
+                        <a href="#clase5" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 5 <span class="ml-auto text-xs text-slate-500">Vie, 4 Jul</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <button class="sidebar-item sidebar-week-toggle group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100" data-target="week2-classes">
+                        <i class="fas fa-calendar-week mr-3 text-slate-400 group-hover:text-slate-600"></i>Semana 2 <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                    </button>
+                    <div id="week2-classes" class="hidden pl-6 space-y-1">
+                        <a href="#clase6" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 6 <span class="ml-auto text-xs text-slate-500">Lun, 7 Jul</span>
+                        </a>
+                        <a href="#clase7" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 7 <span class="ml-auto text-xs text-slate-500">Mar, 8 Jul</span>
+                        </a>
+                        <a href="#clase8" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 8 <span class="ml-auto text-xs text-slate-500">Mié, 9 Jul</span>
+                        </a>
+                        <a href="#clase9" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 9 <span class="ml-auto text-xs text-slate-500">Jue, 10 Jul</span>
+                        </a>
+                        <a href="#clase10" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 10 <span class="ml-auto text-xs text-slate-500">Vie, 11 Jul</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="space-y-1">
+                    <button class="sidebar-item sidebar-week-toggle group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100" data-target="week3-classes">
+                        <i class="fas fa-calendar-week mr-3 text-slate-400 group-hover:text-slate-600"></i>Semana 3 <i class="fas fa-chevron-down ml-auto text-xs"></i>
+                    </button>
+                    <div id="week3-classes" class="hidden pl-6 space-y-1">
+                        <a href="#clase11" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 11 <span class="ml-auto text-xs text-slate-500">Lun, 14 Jul</span>
+                        </a>
+                        <a href="#clase12" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 12 <span class="ml-auto text-xs text-slate-500">Mar, 15 Jul</span>
+                        </a>
+                        <a href="#clase13" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 13 <span class="ml-auto text-xs text-slate-500">Mié, 16 Jul</span>
+                        </a>
+                        <a href="#clase14" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 14 <span class="ml-auto text-xs text-slate-500">Jue, 17 Jul</span>
+                        </a>
+                        <a href="#clase15" class="sidebar-item group flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-slate-100">
+                            <i class="fas fa-circle text-xs mr-3 text-blue-400"></i>Clase 15 <span class="ml-auto text-xs text-slate-500">Vie, 18 Jul</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-4 sm:p-6 lg:p-10">
+            <section id="intro" class="mb-12">
+                <div class="intro-title-card bg-gradient-to-r from-emerald-500 to-emerald-300 p-6 rounded-lg shadow-lg text-white mb-6">
+                    <h2 class="text-3xl font-bold">Cronograma del Curso de Preparación para el Concurso Público de Oposición</h2>
+                    <p class="text-white opacity-90 text-xl font-semibold mt-2">Edición Julio 2025</p>
+                </div>
+                <div class="card mt-[-1.5rem] relative z-10">
+                    <p class="text-lg text-slate-600 mb-6 text-justify">
+                        IARGestione se complace en presentar el plan de estudios detallado de nuestro Curso de Preparación para el Concurso Público de Oposición, diseñado especialmente en base a los <b>Ejes Temáticos del MEC 2025</b> y desarrollado en profundidad en nuestro libro, <b>"LA GESTION NORMATIVA, SOCIAL Y CURRICULAR DEL MAGISTERIO NACIONAL Undécima Edición 2025"</b>.
+                    </p>
+                    <p class="text-lg text-slate-600 text-justify">
+                        Nuestro modelo pedagógico combina lo mejor de la interacción en vivo con la autonomía de estudio, para ofrecerte una experiencia flexible, dinámica y efectiva.
+                    </p>
+                    <div class="lg:flex lg:space-x-4 space-y-4 lg:space-y-0 mt-6 mx-auto max-w-4xl">
+                        <div class="flex-1 p-4 rounded-lg bg-blue-50/50 border border-blue-200">
+                            <h4 class="text-blue-700 font-bold text-xl flex items-center mb-2"><i class="fas fa-video mr-3"></i>Clases Sincrónicas</h4>
+                            <p class="text-slate-700 text-base leading-relaxed text-justify">
+                                Sesiones en vivo mediante videoconferencias, donde profundizamos los contenidos clave, resolvemos dudas al instante y promovemos la participación activa.
+                            </p>
+                        </div>
+                        <div class="flex-1 p-4 rounded-lg bg-emerald-50/50 border border-emerald-200">
+                            <h4 class="text-emerald-700 font-bold text-xl flex items-center mb-2"><i class="fas fa-cloud-upload-alt mr-3"></i>Contenido Asincrónico</h4>
+                            <p class="text-slate-700 text-base leading-relaxed text-justify">
+                                Materiales de apoyo disponibles las 24 horas, incluyendo grabaciones de las clases, presentaciones, documentos complementarios y evaluaciones, para que puedas estudiar a tu ritmo y según tu disponibilidad.
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-lg text-slate-600 mt-6 text-center text-justify">
+                        Cada clase sincrónica te dará acceso inmediato a un conjunto completo de recursos asincrónicos, asegurando que cuentes con todo lo necesario para dominar cada tema.
+                    </p>
+                    <div class="my-8 h-px bg-slate-200"></div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-800 text-center">Estructura del Curso por Semana y Clase</h3>
+                    <p class="text-lg text-slate-600 text-center text-justify">A continuación, se detalla el plan para cada clase del mes de julio, organizando el contenido sincrónico y los recursos asincrónicos disponibles.</p>
+                </div>
+            </section>
+                
+            <section id="semana1" class="mb-12">
+                <h3 class="text-2xl font-bold pb-2 mb-6 text-sky-700 border-b-2 border-sky-200">Semana 1</h3>
+                <div class="card" id="clase1">
+                    <h4 class="text-xl font-semibold mb-1">Clase 1 – Lunes, 30 de junio: Formación Fundamental I</h4>
+                    <p class="text-md text-slate-500 mb-4">Desarrollo de Fundamentos Legales en Educación.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card">
+                                    <h5><i class="fas fa-gavel icon-small text-blue-700"></i> Constitución Nacional del Paraguay de 1992</h5>
+                                    <p>Se explorarán los pilares constitucionales que protegen la familia, reconocen los derechos de los pueblos indígenas, establecen los principios de la educación y la cultura, y regulan las condiciones del trabajo.</p>
+                                </div>
+                                <div class="sync-topic-card">
+                                    <h5><i class="fas fa-child icon-small text-purple-600"></i> Ley N° 1680/01 (Código de la Niñez)</h5>
+                                    <p>Se desglosarán los derechos, garantías y deberes fundamentales del niño y del adolescente, y el principio del interés superior.</p>
+                                </div>
+                                <div class="sync-topic-card">
+                                    <h5><i class="fas fa-balance-scale icon-small text-blue-700"></i> Ley N° 6083/18 (Modificatoria Ley N° 1680/01)</h5>
+                                    <p>Se abordarán las modificaciones clave al Código de la Niñez y la Adolescencia, incluyendo aspectos de convivencia familiar y medidas de protección.</p>
+                                </div>
+                                <div class="sync-topic-card">
+                                    <h5><i class="fas fa-university icon-small text-blue-700"></i> Ley N° 1264/98 (General de Educación)</h5>
+                                    <p>Se examinará el objeto, fines y principios de la ley, la estructura del sistema educativo nacional y las responsabilidades de los actores.</p>
+                                </div>
+                                <div class="sync-topic-card">
+                                    <h5><i class="fas fa-chalkboard-teacher icon-small text-indigo-600"></i> Ley N° 1725/01 (Estatuto del Educador)</h5>
+                                    <p>Se revisará la definición de educador profesional, el alcance de sus actividades y las normativas para la carrera docente.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 1</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 1</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 1 Constitucion Nacional del Paraguay 1992.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 2 Ley N° 1680-2001 Código de la Niñez y la Adolescencia.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 3 Ley N° 6083-2018 Modifica Código de la Niñez.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 4 Ley N° 1264-1998 General de Educación.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 5 Ley N° 1725-2001 Estatuto del Educador.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 1</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" id="clase2">
+                    <h4 class="text-xl font-semibold mb-1">Clase 2 – Martes, 1 de julio: Formación Fundamental II</h4>
+                    <p class="text-md text-slate-500 mb-4">Normativas Institucionales y Derechos Específicos.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-building icon-small text-blue-700"></i> Ley N° 5749/17 (Carta Orgánica del MEC)</h5><p>Análisis de la estructura orgánica, funciones y competencias del Ministerio de Educación y Ciencias.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-hand-holding-heart icon-small text-purple-600"></i> Ley N° 3231/07 (Educación Escolar Indígena)</h5><p>Principios de una educación específica y diferenciada para pueblos indígenas.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-language icon-small text-indigo-600"></i> Ley N° 4251/10 (De Lenguas)</h5><p>Modalidades de utilización y fomento de las lenguas oficiales y derechos lingüísticos.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-users icon-small text-purple-600"></i> Ley N° 5136/13 (Educación Inclusiva)</h5><p>Definiciones clave, principios y garantías para asegurar la equidad educativa.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-alt icon-small text-blue-700"></i> Decreto Nº 2837/14 (Reglamentación de Educación Inclusiva)</h5><p>Acciones y mecanismos para la implementación de un modelo educativo inclusivo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-compass icon-small text-indigo-600"></i> Res. N° 17267/18 (Lineamientos p/ Sistema Educativo Inclusivo)</h5><p>Dimensiones de la inclusión y ajustes razonables en la propuesta educativa del MEC.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 2</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 2</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 6 Ley N° 5749-2017 Carta Orgánica del MEC.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 7 Ley N° 3231-2007 Educación Escolar Indígena.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 8 Ley N° 4251-2010 De lenguas.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 9 Ley N° 5136-2013 Educación Inclusiva.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 10 Decreto N° 2837-2014 Reglamentación de Educación Inclusiva.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 11 Res. MEC N° 17267-2018-AGUILERA_Lineamientos.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #1 (Clases 1 y 2)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" id="clase3">
+                    <h4 class="text-xl font-semibold mb-1">Clase 3 – Miércoles, 2 de julio: Formación Fundamental III</h4>
+                    <p class="text-md text-slate-500 mb-4">Marco Normativo y Desafíos del Sistema Educativo.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-hands-helping icon-small text-purple-600"></i> Ley N° 6999/22 (Educación Cooperativa)</h5><p>Análisis de la incorporación de la educación cooperativa a la malla curricular.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-chart-bar icon-small text-teal-600"></i> MEC (2020) Informe nacional SNEPE 2018</h5><p>Interpretación de resultados de las evaluaciones censales para entender la calidad educativa.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-tasks icon-small text-teal-600"></i> MEC-JICA (2016) Manual de gestión escolar</h5><p>Directrices para la gestión pedagógica, con énfasis en el Proyecto Curricular Institucional (PCI).</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-lightbulb icon-small text-emerald-600"></i> MEC (2015) Técnicas activas del aprendizaje</h5><p>Diferenciación entre estrategias de aprendizaje y técnicas de estudio, y su aplicación práctica.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-wheelchair icon-small text-purple-600"></i> Res. N° 376/25 (Orientaciones técnicas para NEAE)</h5><p>Procedimientos y roles para la identificación, diseño e implementación de ajustes razonables.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-shield-alt icon-small text-red-600"></i> Res. N° 784/24 (Medidas cautelares de protección)</h5><p>Análisis de medidas de protección ante denuncias de supuestos hechos punibles contra NNA.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                           <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 3</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 3</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 12 Ley N° 6999-2022-Educación Cooperativa.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 13 MEC Informe Nacional de Resultados SNEPE 2018.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 14 MEC-JICA Manual de fortalecimiento de la gestión escolar.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 15 MEC Técnicas activas del aprendizaje.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 16 Res. MEC N° 376-2025-RAMIREZ_EI.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 17 Res. MEC N° 784-2024-RAMIREZ_Medidas cautelares.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 3</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase4">
+                    <h4 class="text-xl font-semibold mb-1">Clase 4 – Jueves, 3 de julio: Formación Fundamental IV</h4>
+                    <p class="text-md text-slate-500 mb-4">Protocolos de Actuación y Código de Ética.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-pills icon-small text-red-600"></i> Res. N° 684/24 (Protocolo ante uso de SPA)</h5><p>Pasos para la detección, respuesta e informe de acciones ante la presencia o uso de sustancias psicoactivas.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-user-shield icon-small text-blue-700"></i> Res. N° 913/23 (Código de ética del MEC)</h5><p>Estudio de los valores y principios que deben guiar a los servidores públicos del MEC.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-chart-line icon-small text-teal-600"></i> Res. N° 825/23 (Programa “Ñamombarete Tekombo’e”)</h5><p>Análisis del marco de referencia del programa y los compromisos de los actores educativos.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-invoice icon-small text-blue-700"></i> Res. N° 563/23 (Documentos obligatorios)</h5><p>Detalle de los documentos administrativos y técnico-pedagógicos de tenencia obligatoria.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-exclamation-triangle icon-small text-red-600"></i> Res. N° 288/23 (Guía de actuación ante acoso)</h5><p>Indicadores de alerta y procedimientos de intervención (escucha, denuncia, acompañamiento).</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-frown-open icon-small text-purple-600"></i> Res. N° 203/23 (Protocolo de atención al maltrato)</h5><p>Definiciones de maltrato, señales de alerta y pasos para la atención de situaciones de maltrato.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 4</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 4</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 18 Res. MEC N° 684-2024-RAMIREZ_Sustancias psicoactivas.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 19 Res. MEC N° 913-2023-RAMIREZ_Código ética.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 20 Res. MEC N° 825-2023-RAMIREZ_Mejoramiento.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 21 Res. MEC N° 563-2023-ZARATE_Tenencia obligatoria.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 22 Res. MEC N° 288-2023-ZARATE_acoso.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 23 Res. MEC N° 203-2023-ZARATE_maltrato.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #2 (Clases 3 y 4)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase5">
+                    <h4 class="text-xl font-semibold mb-1">Clase 5 – Viernes, 4 de julio: Formación Fundamental V</h4>
+                    <p class="text-md text-slate-500 mb-4">Seguridad Escolar y Atención a la Vulnerabilidad.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                           <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-lock icon-small text-red-600"></i> Res. N° 183/23 (Protocolo de seguridad)</h5><p>Análisis de medidas para el ingreso de visitantes, prohibición de sustancias y armas, y simulacros de evacuación.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-chart-pie icon-small text-teal-600"></i> Res. N° 713/22 (Plan de mejora institucional)</h5><p>Componentes de la matriz del plan de mejora para la gestión de la mejora continua.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-hand-holding-medical icon-small text-red-600"></i> Res. N° 22715/18 (Reglamento SAEC)</h5><p>Estudio del Servicio de Atención Educativa Compensatoria (SAEC) para alumnos en riesgo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-head-side-virus icon-small text-red-600"></i> Res. N° 1848/15 (Protocolo atención a estudiantes en riesgo)</h5><p>Procedimientos para la asistencia pedagógica a estudiantes afectados por diversas crisis.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-user-friends icon-small text-purple-600"></i> Res. N° 8353/12 (Protocolo de violencia y acoso escolar)</h5><p>Análisis de medidas de prevención, intervención y apoyo ante casos de violencia y acoso escolar.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 5</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 5</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 24 Res. MEC N° 183-2023-ZARATE_seguridad.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 25 Res. MEC N° 713-2022-ZARATE_plan de mejora.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 26 Res. MEC N° 22715-2018-AGUILERA_ECompensatoria.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 27 Protocolo para atención a estudiantes en riesgo.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FF 28 Res. MEC N° 8353-2012-RIOS.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 5</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="semana2" class="mb-12">
+                <h3 class="text-2xl font-bold pb-2 mb-6 text-sky-700 border-b-2 border-sky-200">Semana 2</h3>
+                <div class="card" id="clase6">
+                    <h4 class="text-xl font-semibold mb-1">Clase 6 – Lunes, 7 de julio: Formación Instrumental I</h4>
+                    <p class="text-md text-slate-500 mb-4">Competencias Comunicativas y Herramientas Digitales.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                           <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-book-reader icon-small text-emerald-600"></i> MEC (2023) - Ñe'ẽry. Programa de lectura, escritura y oralidad</h5><p>Análisis del programa, su marco conceptual y su énfasis en la lectura como centro pedagógico.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-glasses icon-small text-emerald-600"></i> MEC (2022) El estudio ERCE 2019 en Lectura</h5><p>Interpretación de dominios de contenido y procesos cognitivos evaluados en ERCE 2019.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-book-open icon-small text-emerald-600"></i> MEC (2019) Competencias y hábitos de lectura</h5><p>Estudio de la relación entre la exposición a libros y la mejora de capacidades lectoras.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-share-alt icon-small text-indigo-600"></i> MEC (2018) Usos educativos de las redes sociales</h5><p>Ventajas y desventajas del uso de redes sociales en el aula para el aprendizaje.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-network-wired icon-small text-indigo-600"></i> MEC (2016) Módulo II: TIC aplicadas a la educación</h5><p>Integración curricular de las TIC y el concepto de e-learning y sus estrategias de aplicación.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                           <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 6</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 6</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FI 1 Ñe’ery - Programa de lectura, escritura y oralidad v2.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FI 2 El estudio ERCE 2019 y los niveles de aprendizaje en Lectura.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FI 3 Competencias lectoras y hábitos de lectura en Paraguay.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FI 4 Usos educativos de la redes sociales.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FI 5 Especialización en aprendizajes basados en redes y liderazgo.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #3 (Clases 5 y 6)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase7">
+                    <h4 class="text-xl font-semibold mb-1">Clase 7 – Martes, 8 de julio: Educación Inicial I</h4>
+                    <p class="text-md text-slate-500 mb-4">Fundamentos y Modalidades de la Educación Inicial.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-baby icon-small text-purple-600"></i> MEC (2019) Guía Maestra mochilera</h5><p>Estudio del agente educador en atención no escolarizada y modalidades de atención.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-comments icon-small text-emerald-600"></i> MEC (2016) Desarrollo del lenguaje de 0 a 3 años</h5><p>Análisis de los fundamentos del desarrollo lingüístico temprano y el rol del entorno.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-book-reader icon-small text-emerald-600"></i> MEC (2016) Desarrollo del lenguaje II de 3 a 6 años</h5><p>Evolución del lenguaje, construcción de la lectoescritura y microhabilidades de comprensión.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-clinic-medical icon-small text-red-600"></i> MEC (2007) Programa educativo maternal</h5><p>Reconceptualización del niño como sujeto de derechos y la influencia de las neurociencias.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-puzzle-piece icon-small text-teal-600"></i> MEC (2006) Guía para uso de rincones pedagógicos</h5><p>Trabajo por rincones como estrategia para potenciar el aprendizaje activo y la autonomía.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-drafting-compass icon-small text-indigo-600"></i> MEC (2005) Marco curricular de la educación inicial</h5><p>Estudio de los fines, objetivos y principios educativos aplicados a la educación inicial.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 7</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 7</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 1 Guía de implementación del Servicio educativo Maestra mochilera.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 2 Colorín Colorado... Desarrollo del lenguaje I de 0 a 3 años.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 3 Colorín Colorado... Desarrollo del lenguaje II de 3 a 6 años.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 4 Programa Educativo Maternal de 0 a 3 años..pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 5 ¡En cada rincón yo aprendo!.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 6 Marco curricular de la Educación Inicial.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 7</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase8">
+                    <h4 class="text-xl font-semibold mb-1">Clase 8 – Miércoles, 9 de julio: Educación Inicial II</h4>
+                    <p class="text-md text-slate-500 mb-4">Planificación y Evaluación en la Primera Infancia.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-clipboard-list icon-small text-teal-600"></i> MEC (2004) Guía de planificación de la educación inicial</h5><p>La Unidad Didáctica como sistema de organización y los beneficios de la planificación por Unidades y Proyectos.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-child-reaching icon-small text-purple-600"></i> MEC (2004) Programa para jardín de infantes y preescolar</h5><p>Análisis de la estructura del programa en "ámbitos de experiencias" para niños de 3 a 6 años.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-percentage icon-small text-teal-600"></i> MEC (2004) Evaluación del proceso de aprendizaje</h5><p>Funciones diagnóstica, formativa y final de la evaluación, y la interrelación continua entre ellas.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-scroll icon-small text-blue-700"></i> Res. N° 1238/23 (Reglamento de la educación inicial)</h5><p>Condiciones básicas para los servicios de educación inicial, estructura organizativa y modalidades de atención.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-trophy icon-small text-indigo-600"></i> Res. DGEIyEB N° 1525/14 (Criterios de Promoción)</h5><p>Procesos de promoción automática por edad cronológica en el nivel inicial.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 8</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 8</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 7 Guía de planificación de educación inicial.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 8 Programa Jardín de Infantes y Preescolar.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 9 Evaluación del proceso de aprendizaje - Educación inicial.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 10 Res. MEC N° 1238-2023-ZARATE DGEI.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE I 11 Res. DGEIyEB N° 1525-GIMÉNEZ.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #4 (Clases 7 y 8)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="card" id="clase9">
+                    <h4 class="text-xl font-semibold mb-1">Clase 9 – Jueves, 10 de julio: 1° y 2° Ciclos de EEB I</h4>
+                    <p class="text-md text-slate-500 mb-4">Innovaciones en Lectura, Escritura y Habilidades Socioemocionales.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-word icon-small text-emerald-600"></i> MEC (2024) Orientaciones para programa Ñe'ẽry</h5><p>Estrategias como Tertulias Literarias y Maratones de Lectura, y prácticas de escritura en el aula.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-chalkboard icon-small text-indigo-600"></i> MEC (2024) Formación de docentes en Lectura y Escritura</h5><p>Cambio de paradigma hacia la comprensión inferencial y los niveles de comprensión lectora.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-laptop-code icon-small text-teal-600"></i> MEC (2023) Libros de textos digitales accesibles (DUA)</h5><p>Cómo los Libros de Texto Digitales Accesibles (LDA) buscan la inclusión educativa.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-chart-line icon-small text-teal-600"></i> MEC (2022) Reporte de resultado nacional ERCE 2019</h5><p>Interpretación de resultados de Paraguay en Lectura y Matemática e identificación de desafíos.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-users icon-small text-purple-600"></i> MEC (2022) Estudio sobre habilidades socioemocionales</h5><p>Análisis de niveles de empatía, apertura a la diversidad y autorregulación escolar.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 9</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 9</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 1 Guía Ñe'ery EEB.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 2 Programa de formación de docentes en servicio.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 3 Libros de textos digitales accesibles.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 4 Reporte nacional de resultados academicos ERCE 2019.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 5 Estudios habilidades socioemocionales - Paraguay.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 9</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase10">
+                    <h4 class="text-xl font-semibold mb-1">Clase 10 – Viernes, 11 de julio: 1° y 2° Ciclos de EEB II</h4>
+                    <p class="text-md text-slate-500 mb-4">Guías Didácticas y Sistemas de Evaluación.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-book-open icon-small text-emerald-600"></i> MEC (2022) Guía didáctica (4º al 6° grado)</h5><p>Análisis de cómo la guía materializa los fines de la educación y sirve como puente a la innovación.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-book-open icon-small text-emerald-600"></i> MEC (2022) Guía didáctica (1º al 3° grado)</h5><p>Propósito de la guía como apoyo a la práctica pedagógica y a la innovación.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-pencil-ruler icon-small text-teal-600"></i> MEC (2021) Guía del elaborador (1° y 2° ciclos)</h5><p>Profundización en los conceptos de competencia y capacidad y los tipos de aprendizaje.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-language icon-small text-indigo-600"></i> MEC (2016) Enseñanza de lenguas (castellano y guaraní)</h5><p>Diferenciación entre L1 y L2 y análisis de los modelos de educación bilingüe.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-balance-scale icon-small text-blue-700"></i> MEC (2015) Sistema de evaluación (Jóvenes y Adultos)</h5><p>Procedimientos de evaluación, periodos y criterios de repitencia.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                             <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 10</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 10</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 6 Guía docente Castellano-Matemática 2do ciclo.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 7 Guía docente Comunicación Matemática 1er ciclo.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 8 Guía del elaborador - 1er y 2do ciclos 2021.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 9 Enseñanza de las lenguas castellana y guaraní.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 10 Sistema de evaluación y promoción EEB-EPJA.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #5 (Clases 9 y 10)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="semana3" class="mb-12">
+                <h3 class="text-2xl font-bold pb-2 mb-6 text-sky-700 border-b-2 border-sky-200">Semana 3</h3>
+                <div class="card" id="clase11">
+                    <h4 class="text-xl font-semibold mb-1">Clase 11 – Lunes, 14 de julio: 1° y 2° Ciclos de EEB III</h4>
+                    <p class="text-md text-slate-500 mb-4">Profundización en Evaluación y Currículo Bilingüe.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-award icon-small text-indigo-600"></i> Res. DGEIyEB N° 1525/14 (Criterios de Promoción)</h5><p>Análisis de los periodos de evaluación sumativa en la EEB y los requisitos de aprobación.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-invoice icon-small text-blue-700"></i> MEC (2011) Fascículo de evaluación (1° y 2° ciclos)</h5><p>Profundización en el concepto de evaluación como proceso sistemático y sus funciones.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-users-cog icon-small text-indigo-600"></i> MEC (2011) Diseño curricular (Jóvenes y Adultos)</h5><p>Estudio del concepto de educación permanente y las características del aprendizaje en esta población.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-graduation-cap icon-small text-indigo-600"></i> MEC (2008) Programas de estudios (1° al 6° grado)</h5><p>Revisión del perfil del egresado, principios y componentes curriculares.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 11</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 11</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 11 Res. DGEIyEB Nº 1525 - GIMÉNEZ - Promoción.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 12  Fasículo de evaluación 1 y 2 ciclos EEB.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 13 Diseño curricular EBB - EPJA.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EEB 14 Programas de Estudios 1° al 6°grado de la EEB.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 11</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase12">
+                    <h4 class="text-xl font-semibold mb-1">Clase 12 – Martes, 15 de julio: 3° Ciclo de EEB y Ed. Media I</h4>
+                    <p class="text-md text-slate-500 mb-4">Desempeño en PISA y Modalidades Flexibles.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                           <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-chart-pie icon-small text-teal-600"></i> MEC (2023) Resultados del Paraguay en PISA 2022</h5><p>Análisis de hallazgos en Matemáticas, Lectura y Ciencias, y brechas de rendimiento.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-door-open icon-small text-blue-700"></i> Res. N° 2450/17 (Implementación de EBA)</h5><p>Estudio de la modalidad de Educación Básica Abierta y su objetivo de garantizar el acceso educativo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-signature icon-small text-blue-700"></i> Res. DGTCEEByEM N° 1256/25 (Plan curricular EBA)</h5><p>Aprobación del plan curricular diferenciado para 7°, 8° y 9° grados como alternativa flexible.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-route icon-small text-indigo-600"></i> MEC (2017) Diseño curricular para EBA</h5><p>Concepción de la EBA como programa modular flexible centrado en la resolución de problemas.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-medal icon-small text-indigo-600"></i> Res. N° 5088/24 (Conformación del cuadro de honor)</h5><p>Procedimientos actualizados y criterios para el otorgamiento del cuadro de honor.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 12</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 12</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 1 Resultados Paraguay - PISA 2022.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 2 Res. MEC N° 2450-2016-RIERA - Implementación EBA.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>(Referencia Plan Curricular EBA)</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 4 Diseño curricular para la Educación Básica Abierta - EBA.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 5 Res. MEC N° 5088-2024 - Cuadro de honor.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #6 (Clases 11 y 12)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase13">
+                    <h4 class="text-xl font-semibold mb-1">Clase 13 – Miércoles, 16 de julio: 3° Ciclo de EEB y Ed. Media II</h4>
+                    <p class="text-md text-slate-500 mb-4">Proyectos, Salud Integral y Bachilleratos Técnicos.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-plane-departure icon-small text-indigo-600"></i> Res. DGTCEEByEM N° 4119/24 (Visitas y excursiones)</h5><p>Reglamentación para la organización e implementación de proyectos de visitas y excursiones.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-hand-holding-medical icon-small text-red-600"></i> Decreto N° 915/23 (Plan de acción SUMAR)</h5><p>Análisis del plan de acción contra el abuso de drogas, sus ejes y principios.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-notes-medical icon-small text-red-600"></i> SUMAR Material educativo para el docente</h5><p>Niveles de prevención, "Habilidades para la vida" y estrategias didácticas para su desarrollo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-tools icon-small text-teal-600"></i> Res. N° 706/23 (Guía bachilleratos técnicos)</h5><p>Presentación del nuevo modelo de formación técnica y su vinculación con el mundo laboral.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-contract icon-small text-blue-700"></i> Res. DGTCEEByEM N° 257/23 (Modificación promoción)</h5><p>Revisión de las modificaciones a los criterios de promoción, ajustando las exigencias.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-pen-nib icon-small text-teal-600"></i> MEC (2021) Guía del elaborador (3º ciclo, EEB)</h5><p>La planificación didáctica como herramienta para la concreción y contextualización curricular.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 13</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 13</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 6 Res. DGTCEEByEM N° 4119-2024.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 7 Decreto N° 915-2023 SUMAR.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 8 SUMAR Material educativo para el tercer ciclo de la EEB.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 9 Res. MEC N° 706 - Guía implementación Bachilleratos Técnicos.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 10 Res. DGTCEEByEM N° 257 Modificación parcial - evaluación.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 11 Guía del elaborador - 3º Ciclo EEB.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-clipboard-check content-type-icon text-green-500 mr-3"></i>Evaluación de Conocimientos Clase 13</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase14">
+                    <h4 class="text-xl font-semibold mb-1">Clase 14 – Jueves, 17 de julio: 3° Ciclo de EEB y Ed. Media III</h4>
+                    <p class="text-md text-slate-500 mb-4">Planificación, Seguridad Vial y Programas de Estudio.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                           <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-edit icon-small text-teal-600"></i> MEC (2021) Guía del elaborador (Educación Media)</h5><p>Métodos de enseñanza, componentes de la planificación didáctica y momentos de una clase.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-traffic-light icon-small text-red-600"></i> Res. N° 2141/16 (Educación para la seguridad vial)</h5><p>Incorporación de la disciplina en el plan común del Bachillerato Técnico.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-signature icon-small text-blue-700"></i> MEC (2014) Programas de estudios (7° al 9° grado)</h5><p>Estudio del perfil del egresado, principios y componentes curriculares del 3er ciclo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-book-open icon-small text-emerald-600"></i> MEC (2014) Programas de estudios (Ed. Media)</h5><p>Estudio del perfil del egresado y las competencias generales para la Educación Media.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-clipboard-check icon-small text-green-500"></i> Res. DGTCEEByEM N° 101/14 (Promoción bachillerato científico)</h5><p>Criterios de promoción y el uso de proyectos educativos como estrategias de evaluación.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 14</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 14</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 12 Guía del elaborador - Educación Media.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 13 Res. MEC N° 2141 - LAFUENTE.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 14 Programas de estudios 7mo al 9no grado.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 15 Programas de estudios - 1° al 3° Curso.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 16 Res. DGTCEEByEM N° 101 Criterios de promoción EM.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-poll-h content-type-icon text-purple-600 mr-3"></i>Evaluación #7 (Clases 13 y 14)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="clase15">
+                    <h4 class="text-xl font-semibold mb-1">Clase 15 – Viernes, 18 de julio: 3° Ciclo de EEB y Ed. Media IV</h4>
+                    <p class="text-md text-slate-500 mb-4">Evaluación, Currículo y Transversales Finales.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-blue-200 flex items-center">
+                                <i class="fas fa-chalkboard-teacher mr-2 text-blue-600"></i>Contenido Sincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="sync-topic-card"><h5><i class="fas fa-clipboard-check icon-small text-green-500"></i> Res. MEC N° 1525/14 (Criterios promoción)</h5><p>Repaso de los periodos de evaluación sumativa en el Tercer Ciclo y criterios de repitencia.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-user-graduate icon-small text-indigo-600"></i> MEC (2012) Sistema de evaluación (Jóvenes y Adultos)</h5><p>Análisis de procedimientos de evaluación y el fundamento de la andragogía.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-file-alt icon-small text-blue-700"></i> MEC (2011) Fascículo de evaluación (3er ciclo)</h5><p>Revisión de la evaluación del aprendizaje como un proceso sistemático, continuo y participativo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-drafting-compass icon-small text-indigo-600"></i> MEC (2011) Diseño Curricular (Jóvenes y Adultos)</h5><p>Concepto de Educación Permanente y las competencias básicas y aplicadas del currículo.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-ruler-combined icon-small text-indigo-600"></i> MEC (2007) Diseño curricular para EMA</h5><p>Análisis de la modalidad de Educación Media Abierta como oferta flexible y modular.</p></div>
+                                <div class="sync-topic-card"><h5><i class="fas fa-project-diagram icon-small text-teal-600"></i> MEC (2007) Currículo y transversales</h5><p>Desarrollo de competencias a través de ejes transversales como la educación democrática y ambiental.</p></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-700 mb-3 p-2 border-b-2 border-emerald-200 flex items-center">
+                                <i class="fas fa-book-open mr-2 text-emerald-600"></i>Contenido Asincrónico:
+                            </h5>
+                            <div class="space-y-3">
+                                <ul class="list-none space-y-3 text-sm">
+                                    <li class="async-item-card flex items-center"><i class="fas fa-video content-type-icon text-red-500 mr-3"></i>Video Conferencia Clase 15</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-powerpoint content-type-icon text-orange-500 mr-3"></i>Presentación Clase 15</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 17 Res. MEC Nº 1525-2014-GIMÉNEZ-Promoción.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 18 Sistema de evaluación y promoción - EPJA.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 19 Fascículo de evaluación - 3º Ciclo E.E.B..pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 20 Diseño curricular EM para jóvenes y adultas.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 21 Diseño curricular para la Educación Media - EMA.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-file-pdf content-type-icon text-blue-500 mr-3"></i>FE EM 22 MEC Currículo y Transversales.pdf</li>
+                                    <li class="async-item-card flex items-center"><i class="fas fa-trophy content-type-icon text-blue-600 mr-3"></i>Evaluación Final del Curso</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="fab-container">
+        <div id="fab-button" class="fab-button">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div id="fab-menu" class="fab-menu">
+            <div class="fab-menu-item" data-modal-target="solicitar-libro-modal">
+                <i class="fas fa-book"></i>Solicitar Libro
+            </div>
+            <div class="fab-menu-item" data-modal-target="inscribirse-curso-modal">
+                <i class="fas fa-user-plus"></i>Inscribirse al Curso
+            </div>
+            <div class="fab-menu-item" data-modal-target="consultas-modal">
+                <i class="fas fa-question-circle"></i>Consultas
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals (Solicitar Libro, Inscribirse, Consultas) -->
+    <div id="solicitar-libro-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Solicitar Libro</h3><button class="modal-close-button"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body"><form id="solicitar-libro-form"><label for="libro-nombre">Nombre:</label><input type="text" id="libro-nombre" name="nombre" required><label for="libro-apellido">Apellido:</label><input type="text" id="libro-apellido" name="apellido" required><label for="libro-email">Correo Electrónico:</label><input type="email" id="libro-email" name="email"><label for="libro-departamento">Departamento:</label><select id="libro-departamento" name="departamento" required><option value="">Seleccione un departamento</option></select><label for="libro-ciudad">Ciudad:</label><select id="libro-ciudad" name="ciudad" required><option value="">Seleccione una ciudad</option></select><label for="libro-direccion">Dirección:</label><input type="text" id="libro-direccion" name="direccion" required><label for="libro-mensaje">Mensaje (opcional):</label><textarea id="libro-mensaje" name="mensaje"></textarea><button type="submit">Enviar Solicitud</button></form></div>
+        </div>
+    </div>
+    <div id="inscribirse-curso-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Inscribirse al Curso</h3><button class="modal-close-button"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body"><form id="inscribirse-curso-form"><label for="curso-nombre">Nombre:</label><input type="text" id="curso-nombre" name="nombre" required><label for="curso-apellido">Apellido:</label><input type="text" id="curso-apellido" name="apellido" required><label for="curso-email">Correo Electrónico:</label><input type="email" id="curso-email" name="email"><label for="curso-departamento">Departamento:</label><select id="curso-departamento" name="departamento" required><option value="">Seleccione un departamento</option></select><label for="curso-ciudad">Ciudad:</label><select id="curso-ciudad" name="ciudad" required><option value="">Seleccione una ciudad</option></select><label for="curso-direccion">Dirección:</label><input type="text" id="curso-direccion" name="direccion" required><label for="curso-mensaje">Mensaje (opcional):</label><textarea id="curso-mensaje" name="mensaje"></textarea><button type="submit">Enviar Inscripción</button></form></div>
+        </div>
+    </div>
+    <div id="consultas-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Realizar Consulta</h3><button class="modal-close-button"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body"><form id="consultas-form"><label for="consulta-nombre">Nombre:</label><input type="text" id="consulta-nombre" name="nombre" required><label for="consulta-apellido">Apellido:</label><input type="text" id="consulta-apellido" name="apellido" required><label for="consulta-email">Correo Electrónico:</label><input type="email" id="consulta-email" name="email"><label for="consulta-direccion">Dirección:</label><input type="text" id="consulta-direccion" name="direccion"><label for="consulta-mensaje">Mensaje:</label><textarea id="consulta-mensaje" name="mensaje" required></textarea><button type="submit">Enviar Consulta</button></form></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const navLinks = document.querySelectorAll('#nav-menu a');
+            const sections = document.querySelectorAll('main section[id]');
+            const weekToggles = document.querySelectorAll('.sidebar-week-toggle');
+
+            const fabButton = document.getElementById('fab-button');
+            const fabMenu = document.getElementById('fab-menu');
+            const modalOverlays = document.querySelectorAll('.modal-overlay');
+            const modalCloseButtons = document.querySelectorAll('.modal-close-button');
+            const fabMenuItems = document.querySelectorAll('.fab-menu-item');
+            const expandAllBtn = document.getElementById('expand-all');
+            const collapseAllBtn = document.getElementById('collapse-all');
+
+            const departamentosCiudades = {
+                "Asunción": ["Asunción"], "Concepción": ["Concepción", "Horqueta", "Vallemí"], "San Pedro": ["San Pedro del Ycuamandiyú", "General Aquino", "Santa Rosa del Aguaray"], "Cordillera": ["Caacupé", "Piribebuy", "Eusebio Ayala"], "Guairá": ["Villarrica", "Iturbe", "Borja"], "Caaguazú": ["Coronel Oviedo", "Caaguazú", "Repatriación"], "Itapúa": ["Encarnación", "Cambyretá", "Fram"], "Misiones": ["San Juan Bautista", "San Ignacio", "Santiago"], "Paraguarí": ["Paraguarí", "Carapeguá", "Quiindy"], "Alto Paraná": ["Ciudad del Este", "Hernandarias", "Presidente Franco"], "Central": ["Areguá", "Capiatá", "Fernando de la Mora", "Lambaré", "Luque", "Mariano Roque Alonso", "Ñemby", "San Lorenzo", "Villa Elisa", "Limpio", "San Antonio", "Ypané", "J. Augusto Saldívar", "Guarambaré", "Itauguá", "Itá", "Ypacaraí", "Nueva Italia", "Villeta"], "Ñeembucú": ["Pilar", "Alberdi", "Villa Franca"], "Amambay": ["Pedro Juan Caballero", "Capitán Bado"], "Canindeyú": ["Salto del Guairá", "Curuguaty", "La Paloma"], "Presidente Hayes": ["Villa Hayes", "Benjamín Aceval", "Pozo Colorado"], "Boquerón": ["Filadelfia", "Loma Plata", "Mariscal Estigarribia"], "Alto Paraguay": ["Fuerte Olimpo", "Bahía Negra", "Puerto Casado"]
+            };
+
+            function populateDepartamentos() {
+                const selects = document.querySelectorAll('select[name="departamento"]');
+                selects.forEach(select => {
+                    for (const depto in departamentosCiudades) {
+                        const option = document.createElement('option');
+                        option.value = depto;
+                        option.textContent = depto;
+                        select.appendChild(option);
+                    }
+                    select.addEventListener('change', (event) => populateCiudades(event.target.value, select.form));
+                });
+            }
+
+            function populateCiudades(departamento, form) {
+                const ciudadSelect = form.querySelector('select[name="ciudad"]');
+                ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+                if (departamento && departamentosCiudades[departamento]) {
+                    departamentosCiudades[departamento].forEach(ciudad => {
+                        const option = document.createElement('option');
+                        option.value = ciudad;
+                        option.textContent = ciudad;
+                        ciudadSelect.appendChild(option);
+                    });
+                }
+            }
+            
+            populateDepartamentos();
+
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => sidebar.classList.toggle('translate-x-0'));
+            }
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {
+                        sidebar.classList.remove('translate-x-0');
+                    }
+                });
+            });
+
+            // Scrollspy
+            window.addEventListener('scroll', () => {
+                let currentSectionId = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 150) {
+                        currentSectionId = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentSectionId}`) {
+                        link.classList.add('active');
+                        const parentWeekDiv = link.closest('div[id^="week"]');
+                        if (parentWeekDiv && parentWeekDiv.classList.contains('hidden')) {
+                            parentWeekDiv.classList.remove('hidden');
+                        }
+                    }
+                });
+            });
+
+            // FAB Menu
+            if(fabButton) fabButton.addEventListener('click', () => fabMenu.classList.toggle('active'));
+            document.addEventListener('click', (e) => {
+                if (fabMenu && fabButton && !fabButton.contains(e.target) && !fabMenu.contains(e.target)) {
+                    fabMenu.classList.remove('active');
+                }
+            });
+
+            // Modals
+            fabMenuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetModal = document.getElementById(item.dataset.modalTarget);
+                    if(targetModal) targetModal.classList.add('active');
+                    if(fabMenu) fabMenu.classList.remove('active');
+                });
+            });
+            modalCloseButtons.forEach(button => button.addEventListener('click', () => button.closest('.modal-overlay').classList.remove('active')));
+            modalOverlays.forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) overlay.classList.remove('active');
+                });
+            });
+
+            // Sidebar week toggles
+            weekToggles.forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetDiv = document.getElementById(toggle.dataset.target);
+                    if(targetDiv) targetDiv.classList.toggle('hidden');
+                });
+            });
+
+            // Expand/Collapse All
+            if(expandAllBtn) expandAllBtn.addEventListener('click', () => {
+                document.querySelectorAll('div[id^="week"]').forEach(div => div.classList.remove('hidden'));
+            });
+            if(collapseAllBtn) collapseAllBtn.addEventListener('click', () => {
+                document.querySelectorAll('div[id^="week"]').forEach(div => div.classList.add('hidden'));
+            });
+
+            // Form Submission Logic
+            const whatsappNumber = "595976778593";
+            const setupForm = (formId, title) => {
+                const form = document.getElementById(formId);
+                if(form){
+                    form.addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const formData = new FormData(form);
+                        let message = `${title}:\n\n`;
+                        for (let [key, value] of formData.entries()) {
+                            if(value) {
+                                let fieldName = key.charAt(0).toUpperCase() + key.slice(1);
+                                message += `${fieldName}: ${value}\n`;
+                            }
+                        }
+                        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                        form.reset();
+                        const ciudadSelect = form.querySelector('select[name="ciudad"]');
+                        if (ciudadSelect) ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+                        form.closest('.modal-overlay').classList.remove('active');
+                    });
+                }
+            };
+            setupForm('solicitar-libro-form', 'Solicitud de Libro');
+            setupForm('inscribirse-curso-form', 'Inscripción al Curso');
+            setupForm('consultas-form', 'Consulta');
+        });
+    </script>
+</body>
+</html>
