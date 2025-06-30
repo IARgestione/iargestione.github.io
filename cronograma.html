@@ -1054,7 +1054,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuToggle = document.getElementById('menu-toggle');
             const sidebar = document.getElementById('sidebar');
@@ -1176,32 +1176,71 @@
                 document.querySelectorAll('div[id^="week"]').forEach(div => div.classList.add('hidden'));
             });
 
-            // Form Submission Logic
-            const whatsappNumber = "595981733629";
-            const setupForm = (formId, title) => {
+            // Form Submission Logic - Define specific WhatsApp numbers here
+            const whatsappNumberLibro = "595981362759"; // Número para "Solicitar Libro"
+            const whatsappNumberCurso = "595981733629"; // Número para "Inscribirse al Curso"
+            const whatsappNumberConsultas = "595976778593"; // Número para "Consultas"
+
+            // Helper function for sending WhatsApp messages
+            const sendWhatsAppMessage = (formId, messagePrefix, whatsappNum) => {
                 const form = document.getElementById(formId);
                 if(form){
                     form.addEventListener('submit', function(event) {
                         event.preventDefault();
                         const formData = new FormData(form);
-                        let message = `${title}:\n\n`;
-                        for (let [key, value] of formData.entries()) {
-                            if(value) {
-                                let fieldName = key.charAt(0).toUpperCase() + key.slice(1);
-                                message += `${fieldName}: ${value}\n`;
+                        let message = `${messagePrefix}:\n\n`;
+                        
+                        // Collect all fields, including optional ones
+                        const fields = {
+                            'nombre': formData.get('nombre'),
+                            'apellido': formData.get('apellido'),
+                            'email': formData.get('email'),
+                            'departamento': formData.get('departamento'),
+                            'ciudad': formData.get('ciudad'),
+                            'direccion': formData.get('direccion'),
+                            'mensaje': formData.get('mensaje')
+                        };
+
+                        // Check required fields based on form type
+                        let allRequiredFilled = true;
+                        if (formId === 'solicitar-libro-form' || formId === 'inscribirse-curso-form') {
+                            if (!fields.nombre || !fields.apellido || !fields.departamento || !fields.ciudad || !fields.direccion) {
+                                allRequiredFilled = false;
+                            }
+                        } else if (formId === 'consultas-form') {
+                            if (!fields.nombre || !fields.apellido || !fields.mensaje) {
+                                allRequiredFilled = false;
                             }
                         }
-                        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+
+                        if (!allRequiredFilled) {
+                            alert("Por favor, complete todos los campos obligatorios."); 
+                            return;
+                        }
+
+                        // Build WhatsApp message
+                        if (fields.nombre) message += `Nombre: ${fields.nombre}\n`;
+                        if (fields.apellido) message += `Apellido: ${fields.apellido}\n`;
+                        if (fields.email) message += `Correo Electrónico: ${fields.email}\n`;
+                        if (fields.departamento) message += `Departamento: ${fields.departamento}\n`;
+                        if (fields.ciudad) message += `Ciudad: ${fields.ciudad}\n`;
+                        if (fields.direccion) message += `Dirección: ${fields.direccion}\n`;
+                        if (fields.mensaje) message += `Mensaje: ${fields.mensaje}\n`;
+                        
+                        window.open(`https://wa.me/${whatsappNum}?text=${encodeURIComponent(message)}`, '_blank');
                         form.reset();
+                        // Reset city dropdown if it exists
                         const ciudadSelect = form.querySelector('select[name="ciudad"]');
                         if (ciudadSelect) ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
                         form.closest('.modal-overlay').classList.remove('active');
                     });
                 }
             };
-            setupForm('solicitar-libro-form', 'Solicitud de Libro');
-            setupForm('inscribirse-curso-form', 'Inscripción al Curso');
-            setupForm('consultas-form', 'Consulta');
+
+            // Apply WhatsApp send logic to all forms with specific numbers
+            sendWhatsAppMessage('solicitar-libro-form', 'Solicitud de Libro', whatsappNumberLibro);
+            sendWhatsAppMessage('inscribirse-curso-form', 'Inscripción al Curso', whatsappNumberCurso);
+            sendWhatsAppMessage('consultas-form', 'Consulta', whatsappNumberConsultas);
         });
     </script>
 </body>
