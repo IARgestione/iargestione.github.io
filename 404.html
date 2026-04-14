@@ -158,60 +158,22 @@
     </div>
 
     <script type="text/javascript">
-        // --- CONFIGURACIÓN CRÍTICA ---
-        // NO MODIFICAR! Mantenemos TU enlace de Apps Script idéntico.
-        const URL_BASE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbx2K4JLjZ2ibJMRapTlPjswulxDhlr0riI__eGYgGv66aa00qV_iBhMy1KyHi37UvBT/exec";
-        // -----------------------------
+        // --- CONFIGURACIÓN DE LA WEB APP (Reproductor Multimedia) ---
+        const URL_BASE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxj_SuZgyI5FywBKEcygWG9oOf-nGLjeRgsYoSu8i8-S-NRguWlhEyK-DiAlQC5Yv-A/exec";
+        // -------------------------------------------------------------
 
-        function displayError(userMessage, technicalMessage = '') {
-            // Oculta el spinner y muestra la tarjeta roja de error
-            document.getElementById('loading-state').style.display = 'none';
-            const errorState = document.getElementById('error-state');
-            const errorMessage = document.getElementById('error-message');
-
-            errorState.classList.add('visible');
-            let fullMsg = `<strong>${userMessage}</strong>`;
-            if (technicalMessage) {
-                fullMsg += `<br><br><code>${technicalMessage}</code>`;
-            }
-            errorMessage.innerHTML = fullMsg;
-        }
-
-        async function handleRedirect() {
-            if (URL_BASE_APPS_SCRIPT.includes("AQUÍ_PEGA_LA_NUEVA_URL")) {
-                displayError("Sistema web no configurado.", "Falta la URL de Apps Script en 404.html.");
-                return;
-            }
-
+        function handleRedirect() {
             const path = window.location.pathname;
             const idRecurso = path.substring(1).split('/')[0].split('?')[0];
 
             if (idRecurso) {
-                const apiUrl = `${URL_BASE_APPS_SCRIPT}?id=${idRecurso}`;
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        throw new Error(`Servidor: Status ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    if (data.error) {
-                        displayError(data.error);
-                    } else if (data.redirectUrl) {
-                        window.location.replace(data.redirectUrl);
-                    } else {
-                        displayError("La respuesta del servidor está vacía.");
-                    }
-
-                } catch (error) {
-                    console.error("Error API:", error);
-                    displayError("No pudimos contactar la base de datos.", error.message);
-                }
+                // Ahora redirigimos de inmediato hacia nuestra App de Google,
+                // porque ella responderá directamente con la interfaz del reproductor.
+                window.location.replace(`${URL_BASE_APPS_SCRIPT}?id=${idRecurso}`);
             } else {
-                // Caso donde el usuario entra directo a la web raíz de Github sin pasar un código (ej: iargestione.github.io/)
+                // Caso donde entra directo a la raíz
                 document.getElementById('title').innerText = "Sistema Activo 🟢";
-                document.getElementById('subtitle').innerText = "La infraestructura de redirección QR está funcionando correctamente.";
+                document.getElementById('subtitle').innerText = "El Acortador hacia el nuevo Visor Multimedia funciona correctamente.";
                 document.querySelector('.loader').style.display = 'none';
             }
         }
