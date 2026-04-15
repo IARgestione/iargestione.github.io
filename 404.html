@@ -3,182 +3,365 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirigiendo...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Visor IAR</title>
     <style>
-        /* Diseño moderno y minimalista */
+        /* =========================================================
+           VARIABLES Y RESET
+           ========================================================= */
         :root {
-            --bg-color: #f3f4f6;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-muted: #94a3b8;
             --accent: #3b82f6;
-            --card-bg: #ffffff;
-            --error-bg: #fef2f2;
-            --error-text: #991b1b;
+            --accent-glow: rgba(59, 130, 246, 0.25);
+            --error-bg: #451a1a;
             --error-border: #f87171;
+            --error-text: #fca5a5;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            margin: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at center, #ffffff 0%, var(--bg-color) 100%);
-            color: var(--text-main);
-            padding: 20px;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
-        .card {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            max-width: 400px;
-            width: 100%;
-            transition: all 0.3s ease;
+        /* =========================================================
+           LOADER (pantalla de carga)
+           ========================================================= */
+        #loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
-        /* Animación del Loader (Spinner radial suave) */
-        .loader {
+        .spinner {
             width: 48px;
             height: 48px;
-            border: 4px solid #e5e7eb;
+            border: 4px solid #334155;
             border-bottom-color: var(--accent);
             border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-            margin-bottom: 24px;
+            animation: spin 0.8s linear infinite;
         }
 
-        @keyframes rotation {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        h1 {
-            font-size: 1.5rem;
-            margin: 0 0 8px 0;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-        }
-
-        p {
-            margin: 0;
+        #loading-text {
             color: var(--text-muted);
             font-size: 0.95rem;
+        }
+
+        /* =========================================================
+           REPRODUCTOR (oculto hasta que se cargan los datos)
+           ========================================================= */
+        #player-screen {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Barra superior con título */
+        .top-bar {
+            width: 100%;
+            padding: 16px 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .top-bar h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            letter-spacing: 0.3px;
+            line-height: 1.4;
+            padding: 0 10px;
+            word-break: break-word;
+        }
+
+        /* Contenedor del medio embebido */
+        .media-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ─── IFRAME (Video y PDF vía /preview de Drive) ─── */
+        .media-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        /* ─── AUDIO: Contenedor centrado con estilo ─── */
+        .audio-player-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            padding: 30px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .audio-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 30px var(--accent-glow);
+            animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 8px 30px var(--accent-glow); }
+            50% { box-shadow: 0 8px 50px rgba(59, 130, 246, 0.45); }
+        }
+
+        .audio-icon svg {
+            width: 56px;
+            height: 56px;
+            fill: white;
+        }
+
+        .audio-title {
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.5;
+            max-width: 350px;
+            word-break: break-word;
+        }
+
+        audio {
+            width: 90%;
+            max-width: 400px;
+            height: 54px;
+            border-radius: 30px;
+            outline: none;
+        }
+
+        audio::-webkit-media-controls-panel {
+            background: var(--bg-card);
+        }
+
+        /* Capa anti-descarga en esquina izquierda del iframe de Drive */
+        .overlay-blocker {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 70px;
+            height: 70px;
+            z-index: 20;
+            cursor: default;
+        }
+
+        /* =========================================================
+           ERROR
+           ========================================================= */
+        #error-screen {
+            display: none;
+            max-width: 420px;
+            width: 90%;
+            background: var(--error-bg);
+            border: 1px solid var(--error-border);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+        }
+
+        #error-screen h2 {
+            color: var(--error-text);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        #error-screen p {
+            color: #f9a8a8;
+            font-size: 0.9rem;
             line-height: 1.5;
         }
 
-        /* Diseño de Estado de Error */
-        .error-card {
-            background: var(--error-bg);
-            border: 1px solid var(--error-border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: left;
-            display: none;
-            /* Oculto por defecto */
+        /* =========================================================
+           SISTEMA ACTIVO (raíz sin código)
+           ========================================================= */
+        .status-card {
+            text-align: center;
+            background: var(--bg-card);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
         }
 
-        .error-card.visible {
-            display: block;
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .error-title {
-            font-weight: 600;
-            color: var(--error-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .status-card h1 {
+            font-size: 1.5rem;
             margin-bottom: 8px;
-            font-size: 1.05rem;
         }
 
-        .error-detail {
-            font-size: 0.85rem;
-            color: #7f1d1d;
-            margin: 0;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 10px;
-            border-radius: 6px;
-            word-break: break-word;
+        .status-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
         }
     </style>
 </head>
 
-<body>
+<body oncontextmenu="return false;">
 
-    <div class="card" id="main-card">
-        <!-- Estado: Cargando -->
-        <div id="loading-state">
-            <span class="loader"></span>
-            <h1 id="title">Redirigiendo...</h1>
-            <p id="subtitle">Te estamos llevando a tu destino, un momento por favor.</p>
+    <!-- 1. PANTALLA DE CARGA -->
+    <div id="loading-screen">
+        <span class="spinner"></span>
+        <p id="loading-text">Conectando con la base de datos...</p>
+    </div>
+
+    <!-- 2. PANTALLA DEL REPRODUCTOR -->
+    <div id="player-screen">
+        <div class="top-bar">
+            <h1 id="media-title"></h1>
         </div>
-
-        <!-- Estado: Error -->
-        <div class="error-card" id="error-state">
-            <div class="error-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                Error de redirección
-            </div>
-            <div class="error-detail" id="error-message"></div>
+        <div class="media-wrapper" id="media-wrapper">
+            <!-- Se llena dinámicamente con JS -->
         </div>
     </div>
 
-    <script type="text/javascript">
-        // --- CONFIGURACIÓN DE LA WEB APP (Reproductor Multimedia) ---
-        const URL_BASE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxj_SuZgyI5FywBKEcygWG9oOf-nGLjeRgsYoSu8i8-S-NRguWlhEyK-DiAlQC5Yv-A/exec";
-        // -------------------------------------------------------------
+    <!-- 3. PANTALLA DE ERROR -->
+    <div id="error-screen">
+        <h2>⚠️ Error</h2>
+        <p id="error-message"></p>
+    </div>
 
-        function handleRedirect() {
-            const path = window.location.pathname;
-            const idRecurso = path.substring(1).split('/')[0].split('?')[0];
+    <script>
+        // ── Configuración ──────────────────────────────────────────────
+        const API_URL = "https://script.google.com/macros/s/AKfycbxj_SuZgyI5FywBKEcygWG9oOf-nGLjeRgsYoSu8i8-S-NRguWlhEyK-DiAlQC5Yv-A/exec";
 
-            if (idRecurso) {
-                // Ahora redirigimos de inmediato hacia nuestra App de Google,
-                // porque ella responderá directamente con la interfaz del reproductor.
-                window.location.replace(`${URL_BASE_APPS_SCRIPT}?id=${idRecurso}`);
+        // ── Funciones de UI ────────────────────────────────────────────
+        function showLoading()  { document.getElementById('loading-screen').style.display = 'flex'; }
+        function hideLoading()  { document.getElementById('loading-screen').style.display = 'none'; }
+
+        function showPlayer(nombre, tipo, fileId) {
+            hideLoading();
+            document.getElementById('media-title').textContent = nombre;
+            const wrapper = document.getElementById('media-wrapper');
+
+            if (tipo.indexOf('audio') !== -1) {
+                // ─── AUDIO: reproductor HTML5 estilizado ───────────────
+                wrapper.innerHTML = `
+                    <div class="audio-player-box">
+                        <div class="audio-icon">
+                            <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+                        </div>
+                        <p class="audio-title">${nombre}</p>
+                        <audio controls controlsList="nodownload noplaybackrate">
+                            <source src="https://drive.google.com/uc?export=download&id=${fileId}" type="audio/mpeg">
+                        </audio>
+                    </div>`;
+
+            } else if (tipo.indexOf('video') !== -1) {
+                // ─── VIDEO: iframe embebido de Drive /preview ──────────
+                wrapper.innerHTML = `
+                    <iframe src="https://drive.google.com/file/d/${fileId}/preview"
+                            allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <div class="overlay-blocker"></div>`;
+
+            } else if (tipo.indexOf('pdf') !== -1) {
+                // ─── PDF: iframe embebido de Drive /preview ────────────
+                wrapper.innerHTML = `
+                    <iframe src="https://drive.google.com/file/d/${fileId}/preview"
+                            allow="autoplay"></iframe>
+                    <div class="overlay-blocker"></div>`;
+
             } else {
-                // Caso donde entra directo a la raíz
-                document.getElementById('title').innerText = "Sistema Activo 🟢";
-                document.getElementById('subtitle').innerText = "El Acortador hacia el nuevo Visor Multimedia funciona correctamente.";
-                document.querySelector('.loader').style.display = 'none';
+                // ─── DESCONOCIDO: fallback al preview genérico ─────────
+                wrapper.innerHTML = `
+                    <iframe src="https://drive.google.com/file/d/${fileId}/preview"
+                            allow="autoplay"></iframe>
+                    <div class="overlay-blocker"></div>`;
+            }
+
+            document.getElementById('player-screen').style.display = 'flex';
+        }
+
+        function showError(msg) {
+            hideLoading();
+            document.getElementById('error-message').textContent = msg;
+            document.getElementById('error-screen').style.display = 'block';
+        }
+
+        function showStatus() {
+            hideLoading();
+            document.body.innerHTML = `
+                <div class="status-card">
+                    <h1>Sistema Activo 🟢</h1>
+                    <p>El visor multimedia IAR está funcionando correctamente.</p>
+                </div>`;
+        }
+
+        // ── Bloquear Ctrl+S / Ctrl+P ──────────────────────────────────
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
+                e.preventDefault();
+            }
+        });
+
+        // ── Lógica principal ──────────────────────────────────────────
+        async function init() {
+            const path = window.location.pathname;
+            const codigo = path.substring(1).split('/')[0].split('?')[0];
+
+            if (!codigo) {
+                showStatus();
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const resp = await fetch(`${API_URL}?id=${codigo}`);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+                const data = await resp.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else if (data.fileId) {
+                    showPlayer(data.nombre || 'Contenido', data.tipo || '', data.fileId);
+                } else {
+                    showError('La respuesta del servidor no contiene datos válidos.');
+                }
+
+            } catch (err) {
+                showError('No se pudo conectar con la base de datos. Intenta de nuevo.');
+                console.error('Error:', err);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', handleRedirect);
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 
