@@ -5,29 +5,31 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Visor IAR</title>
-    <!-- Favicon inline (evita el 404 de favicon.ico) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
     <style>
         /* =========================================================
-           VARIABLES Y RESET
+           🌿 ESQUEMA VERDE MUSGO — VARIABLES
            ========================================================= */
         :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #111827;
-            --bg-card: #1a2035;
-            --bg-glass: rgba(26, 32, 53, 0.85);
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #64748b;
-            --accent: #6366f1;
-            --accent-light: #818cf8;
-            --accent-glow: rgba(99, 102, 241, 0.3);
-            --gradient-1: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
-            --gradient-2: linear-gradient(135deg, #3b82f6, #6366f1);
-            --border-subtle: rgba(148, 163, 184, 0.08);
-            --error-bg: rgba(239, 68, 68, 0.1);
-            --error-border: rgba(239, 68, 68, 0.3);
-            --error-text: #fca5a5;
+            --bg-primary: #0d1a0f;
+            --bg-secondary: #132216;
+            --bg-card: #1a2e1e;
+            --bg-glass: rgba(26, 46, 30, 0.88);
+            --text-primary: #e8f0e8;
+            --text-secondary: #b8ccb8;
+            --text-muted: #6a8a6e;
+            --accent: #4a7c59;
+            --accent-light: #6aad7a;
+            --accent-bright: #7ec48e;
+            --accent-glow: rgba(74, 124, 89, 0.35);
+            --gradient-1: linear-gradient(135deg, #3a6b48, #5a9a6a, #7ec48e);
+            --gradient-2: linear-gradient(135deg, #2d5a3a, #4a7c59);
+            --border-subtle: rgba(106, 173, 122, 0.12);
+            --border-accent: rgba(106, 173, 122, 0.25);
+            --error-bg: rgba(180, 60, 60, 0.12);
+            --error-border: rgba(220, 90, 90, 0.3);
+            --error-text: #f0a8a8;
+            --shadow-deep: 0 24px 64px rgba(0, 0, 0, 0.6);
         }
 
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -43,8 +45,9 @@
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg-primary);
             background-image:
-                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+                radial-gradient(ellipse at 15% 50%, rgba(74, 124, 89, 0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 25%, rgba(58, 107, 72, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 90%, rgba(42, 80, 52, 0.06) 0%, transparent 40%);
             color: var(--text-primary);
             -webkit-user-select: none;
             user-select: none;
@@ -66,24 +69,22 @@
             width: 52px;
             height: 52px;
             border-radius: 50%;
-            border: 3px solid rgba(99, 102, 241, 0.15);
+            border: 3px solid rgba(74, 124, 89, 0.2);
             border-top-color: var(--accent-light);
             animation: spin 0.9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         #loading-text {
             color: var(--text-muted);
             font-size: 0.88rem;
             font-weight: 500;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.03em;
         }
 
         /* =========================================================
-           REPRODUCTOR — CONTENEDOR PRINCIPAL
+           REPRODUCTOR PRINCIPAL
            ========================================================= */
         #player-screen {
             display: none;
@@ -93,32 +94,42 @@
             position: relative;
         }
 
-        /* ─── Barra superior glassmorphism ─── */
         .top-bar {
             width: 100%;
-            padding: 18px 24px;
-            background: linear-gradient(180deg, rgba(10, 14, 26, 0.92) 0%, rgba(10, 14, 26, 0.4) 70%, transparent 100%);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            padding: 16px 24px 28px;
+            background: linear-gradient(180deg, rgba(13, 26, 15, 0.95) 0%, rgba(13, 26, 15, 0.6) 60%, transparent 100%);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             z-index: 10;
             text-align: center;
         }
 
+        .top-bar .badge {
+            display: inline-block;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent-bright);
+            background: rgba(74, 124, 89, 0.15);
+            border: 1px solid var(--border-accent);
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+
         .top-bar h1 {
-            font-size: 0.95rem;
-            font-weight: 600;
+            font-size: 0.92rem;
+            font-weight: 500;
             color: var(--text-secondary);
-            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-            letter-spacing: 0.01em;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.6);
             line-height: 1.5;
             padding: 0 12px;
             word-break: break-word;
         }
 
-        /* ─── Wrapper del contenido multimedia ─── */
         .media-wrapper {
             flex: 1;
             display: flex;
@@ -129,106 +140,134 @@
         }
 
         /* =========================================================
-           🎵 AUDIO PLAYER — Diseño premium card-style
+           🎵 AUDIO — Card glassmorphism premium
            ========================================================= */
         .audio-card {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 28px;
-            padding: 40px 32px;
+            gap: 24px;
+            padding: 44px 32px 36px;
             width: 92%;
-            max-width: 440px;
+            max-width: 420px;
             background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--border-subtle);
-            border-radius: 28px;
-            box-shadow:
-                0 20px 60px rgba(0, 0, 0, 0.5),
-                0 0 80px var(--accent-glow);
+            border-radius: 32px;
+            box-shadow: var(--shadow-deep), 0 0 100px var(--accent-glow);
         }
 
         .audio-art {
-            width: 140px;
-            height: 140px;
+            width: 150px;
+            height: 150px;
             background: var(--gradient-1);
-            border-radius: 28px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 40px var(--accent-glow);
+            box-shadow: 0 16px 48px var(--accent-glow);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .audio-art::after {
             content: '';
             position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-            border-radius: 28px;
+            inset: -3px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0%, var(--accent-bright) 25%, transparent 50%, var(--accent-light) 75%, transparent 100%);
+            opacity: 0.3;
+            animation: rotate-ring 6s linear infinite;
+            z-index: -1;
         }
+
+        @keyframes rotate-ring { to { transform: rotate(360deg); } }
 
         .audio-art svg {
-            width: 60px;
-            height: 60px;
+            width: 54px;
+            height: 54px;
             fill: white;
-            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
-            z-index: 1;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
         }
 
-        /* Animación de ondas detrás del icono */
-        .pulse-ring {
+        /* Ondas animadas */
+        .wave-ring {
             position: absolute;
             width: 100%;
             height: 100%;
-            border-radius: 28px;
-            border: 2px solid rgba(255,255,255,0.15);
-            animation: pulse-expand 2.5s ease-out infinite;
+            border-radius: 50%;
+            border: 2px solid rgba(126, 196, 142, 0.2);
+            animation: wave-expand 3s ease-out infinite;
+        }
+        .wave-ring:nth-child(2) { animation-delay: 1s; }
+        .wave-ring:nth-child(3) { animation-delay: 2s; }
+
+        @keyframes wave-expand {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.8); opacity: 0; }
         }
 
-        .pulse-ring:nth-child(2) { animation-delay: 0.8s; }
-
-        @keyframes pulse-expand {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(1.4); opacity: 0; }
-        }
-
-        .audio-info {
+        .audio-meta {
             text-align: center;
         }
 
-        .audio-info .label {
-            font-size: 0.7rem;
-            font-weight: 600;
+        .audio-meta .tag {
+            font-size: 0.65rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.15em;
-            color: var(--accent-light);
-            margin-bottom: 8px;
+            letter-spacing: 0.2em;
+            color: var(--accent-bright);
+            margin-bottom: 10px;
         }
 
-        .audio-info .name {
-            font-size: 0.95rem;
+        .audio-meta .name {
+            font-size: 0.9rem;
             color: var(--text-secondary);
-            line-height: 1.5;
-            max-width: 340px;
+            line-height: 1.6;
+            max-width: 320px;
             word-break: break-word;
         }
 
         audio {
             width: 100%;
-            max-width: 380px;
-            height: 48px;
-            border-radius: 24px;
+            max-width: 360px;
+            height: 46px;
+            border-radius: 23px;
             outline: none;
-            filter: saturate(1.2);
+        }
+
+        audio::-webkit-media-controls-panel {
+            background: var(--bg-secondary);
+            border-radius: 23px;
+        }
+
+        /* Botón fallback por si el player no carga */
+        .fallback-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            padding: 10px 22px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--accent-bright);
+            background: rgba(74, 124, 89, 0.12);
+            border: 1px solid var(--border-accent);
+            border-radius: 14px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .fallback-link:hover {
+            background: rgba(74, 124, 89, 0.25);
+            transform: translateY(-1px);
         }
 
         /* =========================================================
-           🎬 VIDEO PLAYER — Fullscreen con controles nativos
+           🎬 VIDEO — Fullscreen con player nativo
            ========================================================= */
-        .video-container {
+        .video-wrapper {
             width: 100%;
             height: 100%;
             display: flex;
@@ -237,27 +276,63 @@
             background: #000;
         }
 
-        .video-container video {
-            width: 100%;
-            max-height: 100vh;
-            outline: none;
-            background: #000;
-        }
-
-        /* =========================================================
-           📄 PDF VIEWER — Google Docs Viewer (evita CSP de Drive)
-           ========================================================= */
-        .pdf-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .pdf-container iframe {
+        /* Usamos iframe de Drive para video (streaming sin descarga) */
+        .video-wrapper iframe {
             width: 100%;
             height: 100%;
             border: none;
-            background: #fff;
+        }
+
+        /* =========================================================
+           📄 PDF — Visor de Google con controles
+           ========================================================= */
+        .pdf-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--bg-secondary);
+        }
+
+        .pdf-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Barra inferior con botones de acción para PDF */
+        .pdf-toolbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(0deg, rgba(13, 26, 15, 0.95) 0%, rgba(13, 26, 15, 0.7) 60%, transparent 100%);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .pdf-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: rgba(74, 124, 89, 0.15);
+            border: 1px solid var(--border-accent);
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .pdf-btn:hover {
+            background: rgba(74, 124, 89, 0.3);
+            color: var(--text-primary);
         }
 
         /* =========================================================
@@ -269,10 +344,10 @@
             width: 90%;
             background: var(--error-bg);
             border: 1px solid var(--error-border);
-            border-radius: 20px;
-            padding: 32px;
+            border-radius: 22px;
+            padding: 34px;
             text-align: center;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(14px);
         }
 
         #error-screen h2 {
@@ -283,7 +358,7 @@
         }
 
         #error-screen p {
-            color: #e5a0a0;
+            color: #dda0a0;
             font-size: 0.88rem;
             line-height: 1.6;
         }
@@ -294,12 +369,12 @@
         .status-card {
             text-align: center;
             background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 48px 36px;
-            border-radius: 24px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 50px 38px;
+            border-radius: 28px;
             border: 1px solid var(--border-subtle);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow-deep);
             max-width: 420px;
             width: 90%;
         }
@@ -320,17 +395,11 @@
            RESPONSIVE
            ========================================================= */
         @media (max-width: 480px) {
-            .audio-card {
-                padding: 28px 20px;
-                border-radius: 22px;
-            }
-            .audio-art {
-                width: 110px;
-                height: 110px;
-            }
-            .top-bar h1 {
-                font-size: 0.85rem;
-            }
+            .audio-card { padding: 32px 22px 28px; border-radius: 26px; }
+            .audio-art { width: 120px; height: 120px; }
+            .audio-art svg { width: 44px; height: 44px; }
+            .top-bar h1 { font-size: 0.82rem; }
+            .pdf-toolbar { padding: 10px 12px; }
         }
     </style>
 </head>
@@ -346,6 +415,7 @@
     <!-- 2. PANTALLA DEL REPRODUCTOR -->
     <div id="player-screen">
         <div class="top-bar">
+            <span class="badge" id="media-badge"></span>
             <h1 id="media-title"></h1>
         </div>
         <div class="media-wrapper" id="media-wrapper"></div>
@@ -361,6 +431,12 @@
         // ── Configuración ──────────────────────────────────────────────
         const API_URL = "https://script.google.com/macros/s/AKfycbxj_SuZgyI5FywBKEcygWG9oOf-nGLjeRgsYoSu8i8-S-NRguWlhEyK-DiAlQC5Yv-A/exec";
 
+        // ── URLs de Google Drive ───────────────────────────────────────
+        function driveDownload(fid)  { return 'https://drive.google.com/uc?export=download&confirm=t&id=' + fid; }
+        function drivePreview(fid)   { return 'https://drive.google.com/file/d/' + fid + '/preview'; }
+        function driveView(fid)      { return 'https://drive.google.com/file/d/' + fid + '/view'; }
+        function docsViewer(fid)     { return 'https://docs.google.com/viewer?srcid=' + fid + '&pid=explorer&efh=false&a=v&chrome=false&embedded=true'; }
+
         // ── UI helpers ─────────────────────────────────────────────────
         function showLoading()  { document.getElementById('loading-screen').style.display = 'flex'; }
         function hideLoading()  { document.getElementById('loading-screen').style.display = 'none'; }
@@ -368,51 +444,61 @@
         function showPlayer(nombre, tipo, fileId) {
             hideLoading();
             document.getElementById('media-title').textContent = nombre;
-            const w = document.getElementById('media-wrapper');
+            var w = document.getElementById('media-wrapper');
+            var badge = document.getElementById('media-badge');
 
             if (tipo.indexOf('audio') !== -1) {
                 // ─── 🎵 AUDIO ─────────────────────────────────────────
-                w.innerHTML = `
-                    <div class="audio-card">
-                        <div class="audio-art">
-                            <div class="pulse-ring"></div>
-                            <div class="pulse-ring"></div>
-                            <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-                        </div>
-                        <div class="audio-info">
-                            <p class="label">Reproduciendo</p>
-                            <p class="name">${nombre}</p>
-                        </div>
-                        <audio controls controlsList="nodownload noplaybackrate" autoplay>
-                            <source src="https://drive.google.com/uc?export=download&id=${fileId}" type="audio/mpeg">
-                        </audio>
-                    </div>`;
+                badge.textContent = '🎵 Audio';
+                w.innerHTML =
+                    '<div class="audio-card">' +
+                        '<div class="audio-art">' +
+                            '<div class="wave-ring"></div>' +
+                            '<div class="wave-ring"></div>' +
+                            '<div class="wave-ring"></div>' +
+                            '<svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>' +
+                        '</div>' +
+                        '<div class="audio-meta">' +
+                            '<p class="tag">Reproduciendo</p>' +
+                            '<p class="name">' + nombre + '</p>' +
+                        '</div>' +
+                        '<audio controls controlsList="nodownload noplaybackrate">' +
+                            '<source src="' + driveDownload(fileId) + '" type="audio/mpeg">' +
+                        '</audio>' +
+                        '<a class="fallback-link" href="' + driveView(fileId) + '" target="_blank" rel="noopener">' +
+                            '▶ Abrir en Google Drive' +
+                        '</a>' +
+                    '</div>';
 
             } else if (tipo.indexOf('video') !== -1) {
-                // ─── 🎬 VIDEO (HTML5 nativo, sin iframe) ──────────────
-                w.innerHTML = `
-                    <div class="video-container">
-                        <video controls controlsList="nodownload" disablePictureInPicture playsinline autoplay>
-                            <source src="https://drive.google.com/uc?export=download&id=${fileId}" type="video/mp4">
-                            Tu navegador no soporta la reproducción de video.
-                        </video>
-                    </div>`;
+                // ─── 🎬 VIDEO (iframe de Drive /preview = streaming) ──
+                badge.textContent = '🎬 Video';
+                w.innerHTML =
+                    '<div class="video-wrapper">' +
+                        '<iframe src="' + drivePreview(fileId) + '" ' +
+                            'allow="autoplay; encrypted-media" allowfullscreen></iframe>' +
+                    '</div>';
 
             } else if (tipo.indexOf('pdf') !== -1) {
-                // ─── 📄 PDF (Google Docs Viewer — evita CSP de Drive) ─
-                var encodedUrl = encodeURIComponent('https://drive.google.com/uc?export=download&id=' + fileId);
-                w.innerHTML = `
-                    <div class="pdf-container">
-                        <iframe src="https://docs.google.com/gview?embedded=true&url=${encodedUrl}"></iframe>
-                    </div>`;
+                // ─── 📄 PDF (Google Docs Viewer con zoom y controles) ─
+                badge.textContent = '📄 Documento';
+                w.innerHTML =
+                    '<div class="pdf-wrapper">' +
+                        '<iframe src="' + docsViewer(fileId) + '"></iframe>' +
+                        '<div class="pdf-toolbar">' +
+                            '<a class="pdf-btn" href="' + driveView(fileId) + '" target="_blank" rel="noopener">' +
+                                '🔍 Ver en pantalla completa' +
+                            '</a>' +
+                        '</div>' +
+                    '</div>';
 
             } else {
-                // ─── Fallback ─────────────────────────────────────────
-                var encodedUrl2 = encodeURIComponent('https://drive.google.com/uc?export=download&id=' + fileId);
-                w.innerHTML = `
-                    <div class="pdf-container">
-                        <iframe src="https://docs.google.com/gview?embedded=true&url=${encodedUrl2}"></iframe>
-                    </div>`;
+                // ─── Fallback genérico ────────────────────────────────
+                badge.textContent = '📁 Archivo';
+                w.innerHTML =
+                    '<div class="pdf-wrapper">' +
+                        '<iframe src="' + docsViewer(fileId) + '"></iframe>' +
+                    '</div>';
             }
 
             document.getElementById('player-screen').style.display = 'flex';
@@ -426,21 +512,21 @@
 
         function showStatus() {
             hideLoading();
-            document.body.innerHTML = `
-                <div class="status-card">
-                    <h1>Sistema Activo 🟢</h1>
-                    <p>El visor multimedia IAR está funcionando correctamente.</p>
-                </div>`;
+            document.body.innerHTML =
+                '<div class="status-card">' +
+                    '<h1>Sistema Activo 🟢</h1>' +
+                    '<p>El visor multimedia IAR está funcionando correctamente.</p>' +
+                '</div>';
         }
 
-        // ── Bloquear atajos de guardado ────────────────────────────────
+        // ── Bloquear atajos ───────────────────────────────────────────
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
                 e.preventDefault();
             }
         });
 
-        // ── JSONP (sin CORS) ──────────────────────────────────────────
+        // ── JSONP ─────────────────────────────────────────────────────
         function handleData(data) {
             if (data.error) {
                 showError(data.error);
