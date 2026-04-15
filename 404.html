@@ -329,8 +329,19 @@
             }
         });
 
-        // ── Lógica principal ──────────────────────────────────────────
-        async function init() {
+        // ── Lógica principal (usa JSONP para evitar CORS) ─────────────
+        // Callback global que Apps Script invocará automáticamente
+        function handleData(data) {
+            if (data.error) {
+                showError(data.error);
+            } else if (data.fileId) {
+                showPlayer(data.nombre || 'Contenido', data.tipo || '', data.fileId);
+            } else {
+                showError('La respuesta del servidor no contiene datos válidos.');
+            }
+        }
+
+        function init() {
             const path = window.location.pathname;
             const codigo = path.substring(1).split('/')[0].split('?')[0];
 
@@ -341,24 +352,13 @@
 
             showLoading();
 
-            try {
-                const resp = await fetch(`${API_URL}?id=${codigo}`);
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-                const data = await resp.json();
-
-                if (data.error) {
-                    showError(data.error);
-                } else if (data.fileId) {
-                    showPlayer(data.nombre || 'Contenido', data.tipo || '', data.fileId);
-                } else {
-                    showError('La respuesta del servidor no contiene datos válidos.');
-                }
-
-            } catch (err) {
+            // Inyectar un <script> con callback=handleData → sin CORS
+            var s = document.createElement('script');
+            s.src = API_URL + '?id=' + encodeURIComponent(codigo) + '&callback=handleData';
+            s.onerror = function() {
                 showError('No se pudo conectar con la base de datos. Intenta de nuevo.');
-                console.error('Error:', err);
-            }
+            };
+            document.head.appendChild(s);
         }
 
         document.addEventListener('DOMContentLoaded', init);
