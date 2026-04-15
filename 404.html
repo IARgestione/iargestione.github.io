@@ -8,28 +8,19 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
     <style>
         /* =========================================================
-           🌿 ESQUEMA VERDE MUSGO — VARIABLES
+           MODO OSCURO + ACENTOS VERDE MUSGO
            ========================================================= */
         :root {
-            --bg-primary: #0d1a0f;
-            --bg-secondary: #132216;
-            --bg-card: #1a2e1e;
-            --bg-glass: rgba(26, 46, 30, 0.88);
-            --text-primary: #e8f0e8;
-            --text-secondary: #b8ccb8;
-            --text-muted: #6a8a6e;
-            --accent: #4a7c59;
-            --accent-light: #6aad7a;
-            --accent-bright: #7ec48e;
-            --accent-glow: rgba(74, 124, 89, 0.35);
-            --gradient-1: linear-gradient(135deg, #3a6b48, #5a9a6a, #7ec48e);
-            --gradient-2: linear-gradient(135deg, #2d5a3a, #4a7c59);
-            --border-subtle: rgba(106, 173, 122, 0.12);
-            --border-accent: rgba(106, 173, 122, 0.25);
-            --error-bg: rgba(180, 60, 60, 0.12);
-            --error-border: rgba(220, 90, 90, 0.3);
-            --error-text: #f0a8a8;
-            --shadow-deep: 0 24px 64px rgba(0, 0, 0, 0.6);
+            --bg: #0b0f14;
+            --bg-elevated: #141a22;
+            --bg-surface: #1a222d;
+            --text: #e2e8f0;
+            --text-dim: #8896a8;
+            --text-faint: #4a5568;
+            --green: #4a7c59;
+            --green-light: #6aad7a;
+            --green-glow: rgba(74, 124, 89, 0.25);
+            --border: rgba(255,255,255,0.06);
         }
 
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -43,376 +34,166 @@
             align-items: center;
             justify-content: center;
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-primary);
-            background-image:
-                radial-gradient(ellipse at 15% 50%, rgba(74, 124, 89, 0.1) 0%, transparent 55%),
-                radial-gradient(ellipse at 85% 25%, rgba(58, 107, 72, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 90%, rgba(42, 80, 52, 0.06) 0%, transparent 40%);
-            color: var(--text-primary);
+            background: var(--bg);
+            color: var(--text);
             -webkit-user-select: none;
             user-select: none;
-            -webkit-touch-callout: none;
             overflow: hidden;
         }
 
-        /* =========================================================
-           LOADER
-           ========================================================= */
+        /* ── Loader ────────────────────────────────────────────────── */
         #loading-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
 
-        .spinner-ring {
-            width: 52px;
-            height: 52px;
+        .spinner {
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 3px solid rgba(74, 124, 89, 0.2);
-            border-top-color: var(--accent-light);
-            animation: spin 0.9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+            border: 3px solid var(--bg-surface);
+            border-top-color: var(--green-light);
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
         #loading-text {
-            color: var(--text-muted);
-            font-size: 0.88rem;
-            font-weight: 500;
-            letter-spacing: 0.03em;
+            color: var(--text-faint);
+            font-size: 0.85rem;
         }
 
-        /* =========================================================
-           REPRODUCTOR PRINCIPAL
-           ========================================================= */
+        /* ── Player Screen ─────────────────────────────────────────── */
         #player-screen {
             display: none;
             width: 100%;
             height: 100vh;
             flex-direction: column;
-            position: relative;
         }
 
+        /* Barra superior sutil */
         .top-bar {
             width: 100%;
-            padding: 16px 24px 28px;
-            background: linear-gradient(180deg, rgba(13, 26, 15, 0.95) 0%, rgba(13, 26, 15, 0.6) 60%, transparent 100%);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            padding: 14px 20px 24px;
+            background: linear-gradient(180deg, rgba(11,15,20,0.95) 0%, rgba(11,15,20,0.5) 70%, transparent 100%);
             position: absolute;
             top: 0; left: 0;
             z-index: 10;
             text-align: center;
         }
 
-        .top-bar .badge {
+        .badge {
             display: inline-block;
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.18em;
-            color: var(--accent-bright);
-            background: rgba(74, 124, 89, 0.15);
-            border: 1px solid var(--border-accent);
-            padding: 4px 14px;
-            border-radius: 20px;
-            margin-bottom: 8px;
+            letter-spacing: 0.16em;
+            color: var(--green-light);
+            border: 1px solid rgba(106,173,122,0.3);
+            padding: 3px 12px;
+            border-radius: 16px;
+            margin-bottom: 6px;
         }
 
         .top-bar h1 {
-            font-size: 0.92rem;
+            font-size: 0.85rem;
             font-weight: 500;
-            color: var(--text-secondary);
-            text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+            color: var(--text-dim);
             line-height: 1.5;
-            padding: 0 12px;
             word-break: break-word;
         }
 
+        /* Contenedor multimedia — TODOS usan iframe preview */
         .media-wrapper {
             flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             width: 100%;
             position: relative;
         }
 
-        /* =========================================================
-           🎵 AUDIO — Card glassmorphism premium
-           ========================================================= */
-        .audio-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 24px;
-            padding: 44px 32px 36px;
-            width: 92%;
-            max-width: 420px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--border-subtle);
-            border-radius: 32px;
-            box-shadow: var(--shadow-deep), 0 0 100px var(--accent-glow);
-        }
-
-        .audio-art {
-            width: 150px;
-            height: 150px;
-            background: var(--gradient-1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 16px 48px var(--accent-glow);
-            position: relative;
-            overflow: visible;
-        }
-
-        .audio-art::after {
-            content: '';
-            position: absolute;
-            inset: -3px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent 0%, var(--accent-bright) 25%, transparent 50%, var(--accent-light) 75%, transparent 100%);
-            opacity: 0.3;
-            animation: rotate-ring 6s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotate-ring { to { transform: rotate(360deg); } }
-
-        .audio-art svg {
-            width: 54px;
-            height: 54px;
-            fill: white;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
-        }
-
-        /* Ondas animadas */
-        .wave-ring {
-            position: absolute;
+        .media-wrapper iframe {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            border: 2px solid rgba(126, 196, 142, 0.2);
-            animation: wave-expand 3s ease-out infinite;
-        }
-        .wave-ring:nth-child(2) { animation-delay: 1s; }
-        .wave-ring:nth-child(3) { animation-delay: 2s; }
-
-        @keyframes wave-expand {
-            0% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(1.8); opacity: 0; }
-        }
-
-        .audio-meta {
-            text-align: center;
-        }
-
-        .audio-meta .tag {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--accent-bright);
-            margin-bottom: 10px;
-        }
-
-        .audio-meta .name {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            max-width: 320px;
-            word-break: break-word;
-        }
-
-        audio {
-            width: 100%;
-            max-width: 360px;
-            height: 46px;
-            border-radius: 23px;
-            outline: none;
-        }
-
-        audio::-webkit-media-controls-panel {
-            background: var(--bg-secondary);
-            border-radius: 23px;
-        }
-
-        /* Botón fallback por si el player no carga */
-        .fallback-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 6px;
-            padding: 10px 22px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--accent-bright);
-            background: rgba(74, 124, 89, 0.12);
-            border: 1px solid var(--border-accent);
-            border-radius: 14px;
-            text-decoration: none;
-            transition: all 0.25s ease;
-        }
-
-        .fallback-link:hover {
-            background: rgba(74, 124, 89, 0.25);
-            transform: translateY(-1px);
-        }
-
-        /* =========================================================
-           🎬 VIDEO — Fullscreen con player nativo
-           ========================================================= */
-        .video-wrapper {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: none;
             background: #000;
         }
 
-        /* Usamos iframe de Drive para video (streaming sin descarga) */
-        .video-wrapper iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* =========================================================
-           📄 PDF — Visor de Google con controles
-           ========================================================= */
-        .pdf-wrapper {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background: var(--bg-secondary);
-        }
-
-        .pdf-wrapper iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Barra inferior con botones de acción para PDF */
-        .pdf-toolbar {
+        /* Botón flotante verde "Abrir en Drive" */
+        .open-btn {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 12px 16px;
-            background: linear-gradient(0deg, rgba(13, 26, 15, 0.95) 0%, rgba(13, 26, 15, 0.7) 60%, transparent 100%);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            z-index: 10;
-        }
-
-        .pdf-btn {
+            bottom: 16px;
+            right: 16px;
+            z-index: 15;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 18px;
-            font-size: 0.75rem;
+            padding: 9px 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
             font-weight: 600;
-            color: var(--text-secondary);
-            background: rgba(74, 124, 89, 0.15);
-            border: 1px solid var(--border-accent);
+            color: #fff;
+            background: var(--green);
+            border: none;
             border-radius: 10px;
-            cursor: pointer;
             text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px var(--green-glow);
             transition: all 0.2s;
         }
 
-        .pdf-btn:hover {
-            background: rgba(74, 124, 89, 0.3);
-            color: var(--text-primary);
+        .open-btn:hover {
+            background: var(--green-light);
+            transform: translateY(-1px);
         }
 
-        /* =========================================================
-           ⚠️ ERROR
-           ========================================================= */
+        /* ── Error ─────────────────────────────────────────────────── */
         #error-screen {
             display: none;
-            max-width: 420px;
-            width: 90%;
-            background: var(--error-bg);
-            border: 1px solid var(--error-border);
-            border-radius: 22px;
-            padding: 34px;
+            max-width: 400px;
+            width: 88%;
+            background: var(--bg-elevated);
+            border: 1px solid rgba(220,80,80,0.2);
+            border-radius: 18px;
+            padding: 30px;
             text-align: center;
-            backdrop-filter: blur(14px);
         }
 
         #error-screen h2 {
-            color: var(--error-text);
-            font-size: 1.15rem;
-            margin-bottom: 12px;
-            font-weight: 600;
+            color: #e88;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
         }
 
         #error-screen p {
-            color: #dda0a0;
-            font-size: 0.88rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
             line-height: 1.6;
         }
 
-        /* =========================================================
-           🟢 SISTEMA ACTIVO
-           ========================================================= */
+        /* ── Status ────────────────────────────────────────────────── */
         .status-card {
             text-align: center;
-            background: var(--bg-glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            padding: 50px 38px;
-            border-radius: 28px;
-            border: 1px solid var(--border-subtle);
-            box-shadow: var(--shadow-deep);
-            max-width: 420px;
-            width: 90%;
+            background: var(--bg-elevated);
+            padding: 44px 34px;
+            border-radius: 22px;
+            border: 1px solid var(--border);
+            max-width: 400px;
+            width: 88%;
         }
 
-        .status-card h1 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .status-card p {
-            color: var(--text-muted);
-            font-size: 0.92rem;
-            line-height: 1.6;
-        }
-
-        /* =========================================================
-           RESPONSIVE
-           ========================================================= */
-        @media (max-width: 480px) {
-            .audio-card { padding: 32px 22px 28px; border-radius: 26px; }
-            .audio-art { width: 120px; height: 120px; }
-            .audio-art svg { width: 44px; height: 44px; }
-            .top-bar h1 { font-size: 0.82rem; }
-            .pdf-toolbar { padding: 10px 12px; }
-        }
+        .status-card h1 { font-size: 1.4rem; margin-bottom: 8px; }
+        .status-card p { color: var(--text-faint); font-size: 0.9rem; }
     </style>
 </head>
 
 <body oncontextmenu="return false;">
 
-    <!-- 1. PANTALLA DE CARGA -->
     <div id="loading-screen">
-        <span class="spinner-ring"></span>
+        <span class="spinner"></span>
         <p id="loading-text">Conectando...</p>
     </div>
 
-    <!-- 2. PANTALLA DEL REPRODUCTOR -->
     <div id="player-screen">
         <div class="top-bar">
             <span class="badge" id="media-badge"></span>
@@ -421,85 +202,42 @@
         <div class="media-wrapper" id="media-wrapper"></div>
     </div>
 
-    <!-- 3. PANTALLA DE ERROR -->
     <div id="error-screen">
         <h2>⚠️ Error</h2>
         <p id="error-message"></p>
     </div>
 
     <script>
-        // ── Configuración ──────────────────────────────────────────────
-        const API_URL = "https://script.google.com/macros/s/AKfycbxj_SuZgyI5FywBKEcygWG9oOf-nGLjeRgsYoSu8i8-S-NRguWlhEyK-DiAlQC5Yv-A/exec";
+        var API_URL = "https://script.google.com/macros/s/AKfycbxj_SuZgyI5FywBKEcygWG9oOf-nGLjeRgsYoSu8i8-S-NRguWlhEyK-DiAlQC5Yv-A/exec";
 
-        // ── URLs de Google Drive ───────────────────────────────────────
-        function driveDownload(fid)  { return 'https://drive.google.com/uc?export=download&confirm=t&id=' + fid; }
-        function drivePreview(fid)   { return 'https://drive.google.com/file/d/' + fid + '/preview'; }
-        function driveView(fid)      { return 'https://drive.google.com/file/d/' + fid + '/view'; }
-        function docsViewer(fid)     { return 'https://docs.google.com/viewer?srcid=' + fid + '&pid=explorer&efh=false&a=v&chrome=false&embedded=true'; }
-
-        // ── UI helpers ─────────────────────────────────────────────────
-        function showLoading()  { document.getElementById('loading-screen').style.display = 'flex'; }
-        function hideLoading()  { document.getElementById('loading-screen').style.display = 'none'; }
+        function showLoading() { document.getElementById('loading-screen').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
 
         function showPlayer(nombre, tipo, fileId) {
             hideLoading();
             document.getElementById('media-title').textContent = nombre;
-            var w = document.getElementById('media-wrapper');
             var badge = document.getElementById('media-badge');
+            var w = document.getElementById('media-wrapper');
 
+            // Detectar el tipo para el badge
             if (tipo.indexOf('audio') !== -1) {
-                // ─── 🎵 AUDIO ─────────────────────────────────────────
                 badge.textContent = '🎵 Audio';
-                w.innerHTML =
-                    '<div class="audio-card">' +
-                        '<div class="audio-art">' +
-                            '<div class="wave-ring"></div>' +
-                            '<div class="wave-ring"></div>' +
-                            '<div class="wave-ring"></div>' +
-                            '<svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>' +
-                        '</div>' +
-                        '<div class="audio-meta">' +
-                            '<p class="tag">Reproduciendo</p>' +
-                            '<p class="name">' + nombre + '</p>' +
-                        '</div>' +
-                        '<audio controls controlsList="nodownload noplaybackrate">' +
-                            '<source src="' + driveDownload(fileId) + '" type="audio/mpeg">' +
-                        '</audio>' +
-                        '<a class="fallback-link" href="' + driveView(fileId) + '" target="_blank" rel="noopener">' +
-                            '▶ Abrir en Google Drive' +
-                        '</a>' +
-                    '</div>';
-
             } else if (tipo.indexOf('video') !== -1) {
-                // ─── 🎬 VIDEO (iframe de Drive /preview = streaming) ──
                 badge.textContent = '🎬 Video';
-                w.innerHTML =
-                    '<div class="video-wrapper">' +
-                        '<iframe src="' + drivePreview(fileId) + '" ' +
-                            'allow="autoplay; encrypted-media" allowfullscreen></iframe>' +
-                    '</div>';
-
             } else if (tipo.indexOf('pdf') !== -1) {
-                // ─── 📄 PDF (Google Docs Viewer con zoom y controles) ─
                 badge.textContent = '📄 Documento';
-                w.innerHTML =
-                    '<div class="pdf-wrapper">' +
-                        '<iframe src="' + docsViewer(fileId) + '"></iframe>' +
-                        '<div class="pdf-toolbar">' +
-                            '<a class="pdf-btn" href="' + driveView(fileId) + '" target="_blank" rel="noopener">' +
-                                '🔍 Ver en pantalla completa' +
-                            '</a>' +
-                        '</div>' +
-                    '</div>';
-
             } else {
-                // ─── Fallback genérico ────────────────────────────────
                 badge.textContent = '📁 Archivo';
-                w.innerHTML =
-                    '<div class="pdf-wrapper">' +
-                        '<iframe src="' + docsViewer(fileId) + '"></iframe>' +
-                    '</div>';
             }
+
+            // TODOS los tipos usan Drive /preview (streaming nativo)
+            // Es la misma técnica que funciona para video
+            var previewUrl = 'https://drive.google.com/file/d/' + fileId + '/preview';
+            var viewUrl = 'https://drive.google.com/file/d/' + fileId + '/view';
+
+            w.innerHTML =
+                '<iframe src="' + previewUrl + '" allow="autoplay; encrypted-media" allowfullscreen></iframe>' +
+                '<a class="open-btn" href="' + viewUrl + '" target="_blank" rel="noopener">↗ Abrir en Drive</a>';
 
             document.getElementById('player-screen').style.display = 'flex';
         }
@@ -519,40 +257,23 @@
                 '</div>';
         }
 
-        // ── Bloquear atajos ───────────────────────────────────────────
         document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
-                e.preventDefault();
-            }
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) e.preventDefault();
         });
 
-        // ── JSONP ─────────────────────────────────────────────────────
         function handleData(data) {
-            if (data.error) {
-                showError(data.error);
-            } else if (data.fileId) {
-                showPlayer(data.nombre || 'Contenido', data.tipo || '', data.fileId);
-            } else {
-                showError('Respuesta inválida del servidor.');
-            }
+            if (data.error) showError(data.error);
+            else if (data.fileId) showPlayer(data.nombre || 'Contenido', data.tipo || '', data.fileId);
+            else showError('Respuesta inválida.');
         }
 
         function init() {
-            var path = window.location.pathname;
-            var codigo = path.substring(1).split('/')[0].split('?')[0];
-
-            if (!codigo) {
-                showStatus();
-                return;
-            }
-
+            var codigo = window.location.pathname.substring(1).split('/')[0].split('?')[0];
+            if (!codigo) { showStatus(); return; }
             showLoading();
-
             var s = document.createElement('script');
             s.src = API_URL + '?id=' + encodeURIComponent(codigo) + '&callback=handleData';
-            s.onerror = function() {
-                showError('No se pudo conectar con la base de datos.');
-            };
+            s.onerror = function() { showError('No se pudo conectar.'); };
             document.head.appendChild(s);
         }
 
